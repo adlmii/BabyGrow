@@ -7,10 +7,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
 val Typography = Typography(
-    // Display styles - untuk headers besar
+    // Display styles - Untuk judul besar yang sangat menonjol
     displayLarge = TextStyle(
         fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Bold,
+        fontWeight = FontWeight.ExtraBold,
         fontSize = 57.sp,
         lineHeight = 64.sp,
         letterSpacing = (-0.25).sp
@@ -30,17 +30,17 @@ val Typography = Typography(
         letterSpacing = 0.sp
     ),
 
-    // Headline styles - untuk section headers
+    // Headline styles - Untuk judul halaman atau bagian penting
     headlineLarge = TextStyle(
         fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Bold,
+        fontWeight = FontWeight.ExtraBold,
         fontSize = 32.sp,
         lineHeight = 40.sp,
         letterSpacing = 0.sp
     ),
     headlineMedium = TextStyle(
         fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Bold,
+        fontWeight = FontWeight.ExtraBold, // Dipertebal agar lebih modern
         fontSize = 28.sp,
         lineHeight = 36.sp,
         letterSpacing = 0.sp
@@ -53,7 +53,7 @@ val Typography = Typography(
         letterSpacing = 0.sp
     ),
 
-    // Title styles - untuk card headers
+    // Title styles - Untuk judul kartu (Card Headers)
     titleLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.SemiBold,
@@ -70,19 +70,19 @@ val Typography = Typography(
     ),
     titleSmall = TextStyle(
         fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.SemiBold,
+        fontWeight = FontWeight.Bold,
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.1.sp
     ),
 
-    // Body styles - untuk content text
+    // Body styles - Untuk teks isi, letter spacing diatur agar bersih (clean look)
     bodyLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
+        letterSpacing = 0.1.sp // Sedikit rapat untuk keterbacaan modern
     ),
     bodyMedium = TextStyle(
         fontFamily = FontFamily.Default,
@@ -93,16 +93,16 @@ val Typography = Typography(
     ),
     bodySmall = TextStyle(
         fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
+        fontWeight = FontWeight.Medium,
         fontSize = 12.sp,
         lineHeight = 16.sp,
         letterSpacing = 0.4.sp
     ),
 
-    // Label styles - untuk buttons dan labels
+    // Label styles - Untuk tombol dan label kecil
     labelLarge = TextStyle(
         fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Medium,
+        fontWeight = FontWeight.Bold, // Bold pada tombol agar lebih jelas
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.1.sp

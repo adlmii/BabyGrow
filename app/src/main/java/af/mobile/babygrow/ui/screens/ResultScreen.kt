@@ -5,13 +5,13 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.outlined.*
-import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material.icons.outlined.WarningAmber
-import androidx.compose.material.icons.outlined.ElectricBolt
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,8 +19,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -40,19 +41,27 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
 
     val ui by vm.uiState.collectAsState()
 
+    // Menentukan Warna & Icon berdasarkan Risiko
     val riskColor = when(ui.riskLevel.uppercase()) {
         "HIGH" -> StatusDanger
         "MEDIUM" -> StatusWarning
         else -> StatusSuccess
     }
 
-    // Helper function untuk handle back button
+    val riskIcon = when(ui.riskLevel.uppercase()) {
+        "HIGH" -> Icons.Outlined.WarningAmber
+        "MEDIUM" -> Icons.Outlined.ElectricBolt
+        else -> Icons.Outlined.CheckCircle
+    }
+
+    // Helper function untuk handle back button (Simpan ke history sebelum kembali)
     fun handleBackButton() {
         val summary = HealthCheckSummary(
             timestamp = System.currentTimeMillis(),
             riskLevel = ui.riskLevel,
             riskScore = ui.riskScore,
-            shortRecommendation = ui.recommendationShort
+            shortRecommendation = ui.recommendationShort,
+            inputData = input
         )
         navController.previousBackStackEntry?.savedStateHandle?.set("healthResult", summary)
         input?.let {
@@ -63,11 +72,13 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
         navController.popBackStack()
     }
 
+    // Animasi Warna Background
     val animatedColor by animateColorAsState(
         targetValue = riskColor,
         animationSpec = tween(600), label = ""
     )
 
+    // Animasi Scaling Kartu Utama
     var visible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { visible = true }
 
@@ -84,21 +95,20 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        "Hasil Pemeriksaan",
+                        "Hasil Analisa",
+                        style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = {
-                        handleBackButton()
-                    }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    IconButton(onClick = { handleBackButton() }) {
+                        Icon(Icons.Rounded.ArrowBack, contentDescription = "Back")
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 ),
-                modifier = Modifier.shadow(2.dp)
+                modifier = Modifier.shadow(4.dp)
             )
         }
     ) { padding ->
@@ -108,16 +118,17 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
                 .padding(padding)
                 .background(MaterialTheme.colorScheme.background)
                 .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp),
             contentPadding = PaddingValues(vertical = 24.dp)
         ) {
+            // --- KARTU UTAMA (Risk Level) ---
             item {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .scale(scale)
-                        .shadow(8.dp, RoundedCornerShape(24.dp)),
-                    shape = RoundedCornerShape(24.dp),
+                        .shadow(12.dp, RoundedCornerShape(32.dp), spotColor = animatedColor),
+                    shape = RoundedCornerShape(32.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surface
                     )
@@ -128,7 +139,7 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
                             .background(
                                 Brush.verticalGradient(
                                     colors = listOf(
-                                        animatedColor.copy(alpha = 0.1f),
+                                        animatedColor.copy(alpha = 0.15f),
                                         MaterialTheme.colorScheme.surface
                                     )
                                 )
@@ -139,42 +150,50 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
                                 .fillMaxWidth()
                                 .padding(32.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                            verticalArrangement = Arrangement.spacedBy(20.dp)
                         ) {
-                            Icon(
-                                imageVector = when(ui.riskLevel.uppercase()) {
-                                    "HIGH" -> Icons.Outlined.WarningAmber
-                                    "MEDIUM" -> Icons.Outlined.ElectricBolt
-                                    else -> Icons.Outlined.CheckCircle
-                                },
-                                contentDescription = ui.riskLevel,
-                                tint = animatedColor,
-                                modifier = Modifier.size(56.dp)
-                            )
+                            // Icon Animasi dengan Lingkaran Background
+                            Box(
+                                modifier = Modifier
+                                    .size(88.dp)
+                                    .background(animatedColor.copy(alpha = 0.2f), CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = riskIcon,
+                                    contentDescription = ui.riskLevel,
+                                    tint = animatedColor,
+                                    modifier = Modifier.size(48.dp)
+                                )
+                            }
 
-                            Text(
-                                "Tingkat Risiko",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    "Tingkat Risiko",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    ui.riskLevel.uppercase(),
+                                    style = MaterialTheme.typography.displayMedium,
+                                    fontWeight = FontWeight.Black,
+                                    color = animatedColor,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
 
-                            Text(
-                                ui.riskLevel.uppercase(),
-                                style = MaterialTheme.typography.displayMedium,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = animatedColor
-                            )
-
+                            // Badge Skor
                             Surface(
-                                shape = RoundedCornerShape(12.dp),
-                                color = animatedColor.copy(alpha = 0.1f)
+                                shape = RoundedCornerShape(50),
+                                color = animatedColor,
+                                modifier = Modifier.shadow(4.dp, RoundedCornerShape(50))
                             ) {
                                 Text(
-                                    "Skor: ${ui.riskScore}",
-                                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
-                                    style = MaterialTheme.typography.titleLarge,
+                                    "Skor Risiko: ${ui.riskScore}",
+                                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp),
+                                    style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
-                                    color = animatedColor
+                                    color = MaterialTheme.colorScheme.surface
                                 )
                             }
                         }
@@ -182,27 +201,84 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
                 }
             }
 
+            // --- KARTU REKOMENDASI ---
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = animatedColor.copy(alpha = 0.1f) // Background lembut sesuai risiko
+                    ),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, animatedColor.copy(alpha = 0.3f))
+                ) {
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Icon(
+                                Icons.Outlined.Lightbulb,
+                                contentDescription = null,
+                                tint = animatedColor,
+                                modifier = Modifier.size(28.dp)
+                            )
+                            Text(
+                                "Rekomendasi Medis",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+
+                        Text(
+                            ui.recommendationShort,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.4
+                        )
+                    }
+                }
+            }
+
+            // --- HEADER DETAIL ---
+            item {
+                Text(
+                    "Detail Penilaian",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+
+            // --- FAKTOR RISIKO ---
             item {
                 AssessmentCard(
-                    title = "Penilaian Kondisi",
-                    icon = Icons.Outlined.Assessment,
-                    reasons = ui.reasons,
-                    symptoms = input?.symptoms ?: emptyList()
+                    title = "Faktor Risiko Terdeteksi",
+                    icon = Icons.Outlined.Analytics,
+                    items = ui.reasons
                 )
             }
 
-            item {
-                RecommendationCard(
-                    recommendation = ui.recommendationShort,
-                    riskLevel = ui.riskLevel,
-                    riskColor = riskColor
-                )
+            // --- GEJALA LAINNYA ---
+            if (input?.symptoms?.isNotEmpty() == true) {
+                item {
+                    AssessmentCard(
+                        title = "Gejala Dilaporkan",
+                        icon = Icons.Outlined.MedicalServices,
+                        items = input.symptoms
+                    )
+                }
             }
 
+            // --- TOMBOL AKSI ---
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     OutlinedButton(
                         onClick = { handleBackButton() },
@@ -210,29 +286,25 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
                             .weight(1f)
                             .height(56.dp),
                         shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = MaterialTheme.colorScheme.primary
-                        )
+                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                     ) {
-                        Icon(Icons.Outlined.Home, contentDescription = null)
+                        Icon(Icons.Rounded.Home, contentDescription = null)
                         Spacer(Modifier.width(8.dp))
-                        Text("Kembali", fontWeight = FontWeight.Bold)
+                        Text("Beranda", fontWeight = FontWeight.Bold)
                     }
 
                     Button(
-                        onClick = { /* Share functionality */ },
+                        onClick = { /* TODO: Implement Share */ },
                         modifier = Modifier
                             .weight(1f)
-                            .height(56.dp),
+                            .height(56.dp)
+                            .shadow(4.dp, RoundedCornerShape(16.dp)),
                         shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary
-                        ),
-                        elevation = ButtonDefaults.buttonElevation(
-                            defaultElevation = 4.dp
                         )
                     ) {
-                        Icon(Icons.Outlined.Share, contentDescription = null)
+                        Icon(Icons.Rounded.Share, contentDescription = null)
                         Spacer(Modifier.width(8.dp))
                         Text("Bagikan", fontWeight = FontWeight.Bold)
                     }
@@ -245,22 +317,20 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
 @Composable
 fun AssessmentCard(
     title: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    reasons: List<String>,
-    symptoms: List<String>
+    icon: ImageVector,
+    items: List<String>
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .shadow(4.dp, RoundedCornerShape(20.dp)),
+        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
-        )
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
             modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -279,97 +349,37 @@ fun AssessmentCard(
                 )
             }
 
-            Divider(color = MaterialTheme.colorScheme.outlineVariant)
+            HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
 
-            if (reasons.isNotEmpty()) {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    reasons.forEach { reason ->
+            if (items.isEmpty()) {
+                Text(
+                    "Tidak ada data signifikan.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(vertical = 4.dp)
+                )
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items.forEach { item ->
                         Row(
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                "•",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Bold
+                            Icon(
+                                imageVector = Icons.Outlined.Circle,
+                                contentDescription = null,
+                                modifier = Modifier.size(8.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
-                                reason,
+                                item,
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.weight(1f)
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
                 }
             }
-
-            if (symptoms.isNotEmpty()) {
-                Divider(color = MaterialTheme.colorScheme.outlineVariant)
-
-                Text(
-                    "Gejala Tambahan:",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-
-                Text(
-                    symptoms.joinToString(", "),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun RecommendationCard(
-    recommendation: String,
-    riskLevel: String,
-    riskColor: Color
-) {
-    val emoji = when(riskLevel.uppercase()) {
-        "HIGH" -> "🏥"
-        "MEDIUM" -> "👨‍⚕️"
-        else -> "💚"
-    }
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = riskColor.copy(alpha = 0.05f)
-        )
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Text(
-                    emoji,
-                    style = MaterialTheme.typography.headlineMedium
-                )
-                Text(
-                    "Rekomendasi",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = riskColor
-                )
-            }
-
-            Text(
-                recommendation,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-                lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.2
-            )
         }
     }
 }

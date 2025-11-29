@@ -1,17 +1,17 @@
 package af.mobile.babygrow.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -19,7 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -48,6 +48,7 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
     var symptomDifficultBreath by remember { mutableStateOf(false) }
     var symptomHardToNurse by remember { mutableStateOf(false) }
 
+    // Validasi sederhana
     val isFormValid = temp.isNotBlank() && vomit.isNotBlank() && diapers.isNotBlank() && stoolFreq.isNotBlank()
     val history by vm.history.collectAsState()
 
@@ -70,12 +71,12 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
                         Text(
                             "BabyGrow",
                             style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.ExtraBold
                         )
                         Text(
-                            "Cek Kesehatan Anak",
-                            style = MaterialTheme.typography.bodySmall,
+                            "Monitor Kesehatan Anak",
+                            style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -83,7 +84,7 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 ),
-                modifier = Modifier.shadow(2.dp)
+                modifier = Modifier.shadow(4.dp)
             )
         }
     ) { padding ->
@@ -93,28 +94,29 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
                 .padding(padding)
                 .background(MaterialTheme.colorScheme.background)
                 .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp),
             contentPadding = PaddingValues(vertical = 24.dp)
         ) {
+            // --- SECTION 1: Identitas (Gender) ---
             item {
                 ModernCard(
-                    title = "Jenis Kelamin",
-                    icon = Icons.Outlined.Face
+                    title = "Siapa yang diperiksa?",
+                    icon = Icons.Outlined.Person
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         GenderButton(
                             text = "Laki-laki",
-                            icon = "👦",
+                            icon = Icons.Outlined.Male,
                             selected = gender == "M",
                             modifier = Modifier.weight(1f)
                         ) { gender = "M" }
 
                         GenderButton(
                             text = "Perempuan",
-                            icon = "👧",
+                            icon = Icons.Outlined.Female,
                             selected = gender == "F",
                             modifier = Modifier.weight(1f)
                         ) { gender = "F" }
@@ -122,38 +124,37 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
                 }
             }
 
+            // --- SECTION 2: Tanda Vital ---
             item {
                 ModernCard(
-                    title = "Data Kesehatan Dasar",
-                    icon = Icons.Outlined.FavoriteBorder
+                    title = "Tanda Vital",
+                    icon = Icons.Outlined.MonitorHeart
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         ModernTextField(
                             value = temp,
                             onValueChange = { temp = it },
                             label = "Suhu Tubuh",
-                            placeholder = "37.5",
+                            placeholder = "Contoh: 36.5",
                             suffix = "°C",
                             keyboardType = KeyboardType.Decimal,
-                            leadingIcon = Icons.Outlined.LocalFireDepartment
+                            leadingIcon = Icons.Outlined.Thermostat
                         )
 
                         ModernTextField(
                             value = vomit,
                             onValueChange = { vomit = it },
-                            label = "Frekuensi Muntah",
-                            placeholder = "0",
-                            suffix = "kali",
+                            label = "Muntah",
+                            suffix = "x",
                             keyboardType = KeyboardType.Number,
-                            leadingIcon = Icons.Outlined.Warning
+                            leadingIcon = Icons.Outlined.Sick
                         )
 
                         ModernTextField(
                             value = diapers,
                             onValueChange = { diapers = it },
-                            label = "Popok Basah (24 jam)",
-                            placeholder = "6",
-                            suffix = "kali",
+                            label = "Popok Basah",
+                            suffix = "x",
                             keyboardType = KeyboardType.Number,
                             leadingIcon = Icons.Outlined.WaterDrop
                         )
@@ -161,55 +162,38 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
                 }
             }
 
+            // --- SECTION 3: Nafsu Makan ---
             item {
                 ModernCard(
                     title = "Nafsu Makan",
                     icon = Icons.Outlined.Restaurant
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        // Value indicator dengan background
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                                    shape = RoundedCornerShape(12.dp)
-                                )
-                                .padding(12.dp),
-                            contentAlignment = Alignment.Center
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                            Text(
+                                "Tingkat Nafsu Makan",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            // UPDATE: Background Ungu (Primary), Teks Putih
+                            Surface(
+                                color = MaterialTheme.colorScheme.primary, // Background Ungu
+                                shape = RoundedCornerShape(8.dp)
                             ) {
                                 Text(
-                                    "Nafsu: ",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    "${appetite.toInt()}/5",
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = Color.White // Teks Putih
                                 )
-                                Surface(
-                                    shape = RoundedCornerShape(50),
-                                    color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(vertical = 4.dp)
-                                ) {
-                                    Text(
-                                        "${appetite.toInt()}/5",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.ExtraBold,
-                                        color = MaterialTheme.colorScheme.onPrimary,
-                                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                                    )
-                                }
                             }
                         }
 
-                        // Slider dengan custom styling
+                        // Slider dengan Custom Thumb (Bullet Style)
                         Slider(
                             value = appetite,
                             onValueChange = { appetite = it },
@@ -217,74 +201,47 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
                             steps = 3,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(40.dp),
-                            thumb = {
-                                Box(
-                                    modifier = Modifier
-                                        .size(28.dp)
-                                        .shadow(
-                                            elevation = 8.dp,
-                                            shape = RoundedCornerShape(50),
-                                            clip = false
-                                        )
-                                        .background(
-                                            color = MaterialTheme.colorScheme.primary,
-                                            shape = RoundedCornerShape(50)
-                                        )
-                                        .border(
-                                            width = 2.dp,
-                                            color = MaterialTheme.colorScheme.onPrimary,
-                                            shape = RoundedCornerShape(50)
-                                        )
-                                )
-                            },
-                            track = { sliderPositions ->
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(10.dp)
-                                        .background(
-                                            brush = Brush.horizontalGradient(
-                                                colors = listOf(
-                                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
-                                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-                                                )
-                                            ),
-                                            shape = RoundedCornerShape(50)
-                                        )
-                                )
-                            },
+                                .height(48.dp),
                             colors = SliderDefaults.colors(
                                 thumbColor = MaterialTheme.colorScheme.primary,
                                 activeTrackColor = MaterialTheme.colorScheme.primary,
-                                inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-                            )
+                                inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                            ),
+                            thumb = {
+                                Box(
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .shadow(4.dp, CircleShape)
+                                        .background(MaterialTheme.colorScheme.primary, CircleShape)
+                                        .border(4.dp, Color.White, CircleShape)
+                                )
+                            }
                         )
 
-                        // Labels
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                "😢 Rendah",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                "Tidak Mau",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.error
                             )
                             Text(
-                                "😋 Tinggi",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                "Sangat Lahap",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
                     }
                 }
             }
 
+            // --- SECTION 4: Pencernaan / BAB ---
             item {
                 ModernCard(
-                    title = "Kondisi BAB",
-                    icon = Icons.Outlined.LocalFireDepartment
+                    title = "Pencernaan (BAB)",
+                    icon = Icons.Outlined.Spa
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -294,8 +251,8 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
                             value = stoolFreq,
                             onValueChange = { stoolFreq = it },
                             label = "Frekuensi",
-                            placeholder = "3",
-                            suffix = "kali",
+                            placeholder = "0",
+                            suffix = "x",
                             keyboardType = KeyboardType.Number,
                             modifier = Modifier.weight(1f)
                         )
@@ -317,12 +274,12 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
                                 modifier = Modifier
                                     .menuAnchor()
                                     .fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                                    focusedBorderColor = MaterialTheme.colorScheme.primary
+                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
                                 )
                             )
-
                             ExposedDropdownMenu(
                                 expanded = expandedColor,
                                 onDismissRequest = { expandedColor = false }
@@ -342,21 +299,42 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
                 }
             }
 
+            // --- SECTION 5: Gejala Tambahan (GRID) ---
             item {
                 ModernCard(
                     title = "Gejala Tambahan",
-                    icon = Icons.Outlined.Warning
+                    icon = Icons.Outlined.WarningAmber
                 ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        SymptomCheckbox("Batuk", symptomCough) { symptomCough = it }
-                        SymptomCheckbox("Ruam", symptomRash) { symptomRash = it }
-                        SymptomCheckbox("Flu", symptomFlu) { symptomFlu = it }
-                        SymptomCheckbox("Sesak Nafas", symptomDifficultBreath) { symptomDifficultBreath = it }
-                        SymptomCheckbox("Sulit Menyusu", symptomHardToNurse) { symptomHardToNurse = it }
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Box(modifier = Modifier.weight(1f)) {
+                                SymptomCheckbox("Batuk", symptomCough) { symptomCough = it }
+                            }
+                            Box(modifier = Modifier.weight(1f)) {
+                                SymptomCheckbox("Ruam Kulit", symptomRash) { symptomRash = it }
+                            }
+                        }
+
+                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Box(modifier = Modifier.weight(1f)) {
+                                SymptomCheckbox("Flu / Pilek", symptomFlu) { symptomFlu = it }
+                            }
+                            Box(modifier = Modifier.weight(1f)) {
+                                SymptomCheckbox("Sesak Napas", symptomDifficultBreath) { symptomDifficultBreath = it }
+                            }
+                        }
+
+                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Box(modifier = Modifier.weight(1f)) {
+                                SymptomCheckbox("Sulit Menyusu", symptomHardToNurse) { symptomHardToNurse = it }
+                            }
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
                     }
                 }
             }
 
+            // --- MAIN ACTION BUTTON ---
             item {
                 Button(
                     onClick = {
@@ -378,40 +356,44 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
                             stoolColor = stoolColor,
                             symptoms = symptoms
                         )
-                        // Store input only temporarily for ResultScreen
                         navController.currentBackStackEntry?.savedStateHandle?.set("healthInput", input)
                         navController.navigate("result")
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp),
+                        .height(56.dp)
+                        .shadow(if (isFormValid) 8.dp else 0.dp, RoundedCornerShape(16.dp)),
                     enabled = isFormValid,
                     colors = ButtonDefaults.buttonColors(
+                        // Active: Background Ungu (Primary), Teks Putih
                         containerColor = MaterialTheme.colorScheme.primary,
-                        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant
+                        contentColor = Color.White,
+
+                        // Inactive: Background Surface (Putih/Transparan), Teks Ungu (Primary)
+                        disabledContainerColor = MaterialTheme.colorScheme.surface,
+                        disabledContentColor = MaterialTheme.colorScheme.primary
                     ),
-                    shape = RoundedCornerShape(16.dp),
-                    elevation = ButtonDefaults.buttonElevation(
-                        defaultElevation = 4.dp,
-                        pressedElevation = 8.dp
-                    )
+                    // Border Ungu hanya saat inactive
+                    border = if (!isFormValid) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
+                    shape = RoundedCornerShape(16.dp)
                 ) {
-                    Spacer(Modifier.width(8.dp))
                     Text(
-                        "Mulai Pemeriksaan",
+                        "Analisa Kesehatan",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
+                    Spacer(Modifier.width(8.dp))
+                    Icon(Icons.Rounded.CheckCircle, contentDescription = null)
                 }
             }
 
+            // --- HISTORY LIST ---
             item {
                 Text(
                     "Riwayat Pemeriksaan",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.padding(top = 8.dp)
+                    modifier = Modifier.padding(top = 16.dp, bottom = 4.dp)
                 )
             }
 
@@ -449,27 +431,28 @@ fun SymptomCheckbox(
             .clip(RoundedCornerShape(12.dp))
             .clickable { onCheckedChange(!checked) }
             .background(
-                if (checked) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                if (checked) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
                 else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
             )
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 12.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Checkbox(
             checked = checked,
-            onCheckedChange = onCheckedChange,
+            onCheckedChange = null,
             colors = CheckboxDefaults.colors(
                 checkedColor = MaterialTheme.colorScheme.primary,
-                uncheckedColor = MaterialTheme.colorScheme.outline
-            )
+                checkmarkColor = MaterialTheme.colorScheme.onPrimary
+            ),
+            modifier = Modifier.size(20.dp)
         )
-        Spacer(Modifier.width(12.dp))
+        Spacer(Modifier.width(8.dp))
         Text(
             text,
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = if (checked) FontWeight.SemiBold else FontWeight.Normal,
-            color = if (checked) MaterialTheme.colorScheme.primary
-            else MaterialTheme.colorScheme.onSurface
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = if (checked) FontWeight.Bold else FontWeight.Normal,
+            color = if (checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+            maxLines = 1
         )
     }
 }
@@ -481,25 +464,31 @@ fun EmptyStateCard() {
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-        )
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text("📋", style = MaterialTheme.typography.displayMedium)
+            Icon(
+                imageVector = Icons.Outlined.History,
+                contentDescription = null,
+                modifier = Modifier.size(64.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+            )
             Text(
                 "Belum ada riwayat",
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
-                "Mulai pemeriksaan pertama untuk melihat riwayat",
-                style = MaterialTheme.typography.bodySmall,
+                "Mulai pemeriksaan pertama untuk memantau kesehatan anak Anda.",
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
