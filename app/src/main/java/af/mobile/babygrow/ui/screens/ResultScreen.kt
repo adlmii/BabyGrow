@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -28,6 +29,7 @@ import androidx.navigation.NavHostController
 import af.mobile.babygrow.ui.model.HealthCheckInput
 import af.mobile.babygrow.ui.model.HealthCheckSummary
 import af.mobile.babygrow.ui.theme.*
+import af.mobile.babygrow.ui.util.ScoringEngine // Import ScoringEngine
 import af.mobile.babygrow.ui.viewmodel.ResultViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,13 +37,15 @@ import af.mobile.babygrow.ui.viewmodel.ResultViewModel
 fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewModel()) {
     val input = navController.previousBackStackEntry?.savedStateHandle?.get<HealthCheckInput>("healthInput")
 
+    // Ambil flag apakah ini mode lihat riwayat
+    val isHistoryView = navController.previousBackStackEntry?.savedStateHandle?.get<Boolean>("isHistoryView") ?: false
+
     LaunchedEffect(input) {
         input?.let { vm.evaluate(it) }
     }
 
     val ui by vm.uiState.collectAsState()
 
-    // Menentukan Warna & Icon berdasarkan Risiko
     val riskColor = when(ui.riskLevel.uppercase()) {
         "HIGH" -> StatusDanger
         "MEDIUM" -> StatusWarning
@@ -54,31 +58,31 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
         else -> Icons.Outlined.CheckCircle
     }
 
-    // Helper function untuk handle back button (Simpan ke history sebelum kembali)
+    // Helper function untuk handle back button
     fun handleBackButton() {
-        val summary = HealthCheckSummary(
-            timestamp = System.currentTimeMillis(),
-            riskLevel = ui.riskLevel,
-            riskScore = ui.riskScore,
-            shortRecommendation = ui.recommendationShort,
-            inputData = input
-        )
-        navController.previousBackStackEntry?.savedStateHandle?.set("healthResult", summary)
-        input?.let {
-            navController.previousBackStackEntry?.savedStateHandle?.set(
-                "healthInput_${summary.timestamp}", it
+        if (!isHistoryView) {
+            val summary = HealthCheckSummary(
+                timestamp = System.currentTimeMillis(),
+                riskLevel = ui.riskLevel,
+                riskScore = ui.riskScore,
+                shortRecommendation = ui.recommendationShort,
+                inputData = input
             )
+            navController.previousBackStackEntry?.savedStateHandle?.set("healthResult", summary)
+            input?.let {
+                navController.previousBackStackEntry?.savedStateHandle?.set(
+                    "healthInput_${summary.timestamp}", it
+                )
+            }
         }
         navController.popBackStack()
     }
 
-    // Animasi Warna Background
     val animatedColor by animateColorAsState(
         targetValue = riskColor,
         animationSpec = tween(600), label = ""
     )
 
-    // Animasi Scaling Kartu Utama
     var visible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { visible = true }
 
@@ -95,7 +99,7 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        "Hasil Analisa",
+                        if (isHistoryView) "Detail Riwayat" else "Hasil Analisa",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -121,7 +125,7 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
             verticalArrangement = Arrangement.spacedBy(24.dp),
             contentPadding = PaddingValues(vertical = 24.dp)
         ) {
-            // --- KARTU UTAMA (Risk Level) ---
+            // --- 1. KARTU UTAMA (Risk Level) ---
             item {
                 Card(
                     modifier = Modifier
@@ -152,7 +156,6 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(20.dp)
                         ) {
-                            // Icon Animasi dengan Lingkaran Background
                             Box(
                                 modifier = Modifier
                                     .size(88.dp)
@@ -182,7 +185,6 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
                                 )
                             }
 
-                            // Badge Skor
                             Surface(
                                 shape = RoundedCornerShape(50),
                                 color = animatedColor,
@@ -201,13 +203,13 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
                 }
             }
 
-            // --- KARTU REKOMENDASI ---
+            // --- 2. KARTU REKOMENDASI ---
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(24.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = animatedColor.copy(alpha = 0.1f) // Background lembut sesuai risiko
+                        containerColor = animatedColor.copy(alpha = 0.1f)
                     ),
                     border = androidx.compose.foundation.BorderStroke(1.dp, animatedColor.copy(alpha = 0.3f))
                 ) {
@@ -243,7 +245,14 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
                 }
             }
 
-            // --- HEADER DETAIL ---
+            // --- 3. INPUT DATA SUMMARY ---
+            if (input != null) {
+                item {
+                    InputDataCard(input)
+                }
+            }
+
+            // --- 4. HEADER DETAIL PENILAIAN ---
             item {
                 Text(
                     "Detail Penilaian",
@@ -254,7 +263,7 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
                 )
             }
 
-            // --- FAKTOR RISIKO ---
+            // --- 5. FAKTOR RISIKO & GEJALA ---
             item {
                 AssessmentCard(
                     title = "Faktor Risiko Terdeteksi",
@@ -263,7 +272,6 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
                 )
             }
 
-            // --- GEJALA LAINNYA ---
             if (input?.symptoms?.isNotEmpty() == true) {
                 item {
                     AssessmentCard(
@@ -274,7 +282,7 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
                 }
             }
 
-            // --- TOMBOL AKSI ---
+            // --- 6. TOMBOL AKSI ---
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -290,7 +298,7 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
                     ) {
                         Icon(Icons.Rounded.Home, contentDescription = null)
                         Spacer(Modifier.width(8.dp))
-                        Text("Beranda", fontWeight = FontWeight.Bold)
+                        Text(if (isHistoryView) "Kembali" else "Beranda", fontWeight = FontWeight.Bold)
                     }
 
                     Button(
@@ -314,6 +322,153 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
     }
 }
 
+// --- KOMPONEN UI ---
+
+@Composable
+fun InputDataCard(input: HealthCheckInput) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(24.dp), // Padding diperbesar sedikit agar lega
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            // Header
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.Outlined.Assignment,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(Modifier.width(12.dp))
+                Text(
+                    "Data Pemeriksaan",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+
+            // 1. Section Tanda Vital
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    "Tanda Vital",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    // Menggunakan Box dengan weight agar terbagi rata 3 kolom
+                    Box(modifier = Modifier.weight(1f)) {
+                        VitalItem(Icons.Outlined.Thermostat, "Suhu", "${input.tempC ?: "-"}°C")
+                    }
+                    Box(modifier = Modifier.weight(1f)) {
+                        VitalItem(Icons.Outlined.Sick, "Muntah", "${input.vomitCount}x")
+                    }
+                    Box(modifier = Modifier.weight(1f)) {
+                        VitalItem(Icons.Outlined.WaterDrop, "Popok", "${input.wetDiaperCount}x")
+                    }
+                }
+            }
+
+            HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+
+            // 2. Section Lainnya (List Style dengan Icon Bulat)
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                // Nafsu Makan
+                DataRowItem(
+                    icon = Icons.Outlined.Restaurant,
+                    label = "Nafsu Makan",
+                    value = ScoringEngine.getAppetiteLabel(input.appetiteScore)
+                )
+
+                // Pencernaan
+                DataRowItem(
+                    icon = Icons.Outlined.Spa,
+                    label = "Pencernaan (BAB)",
+                    value = "${input.stoolFreq}x sehari (${input.stoolColor})"
+                )
+            }
+        }
+    }
+}
+
+// Helper untuk Baris Data (Nafsu Makan & Pencernaan)
+@Composable
+fun DataRowItem(icon: ImageVector, label: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Container Icon Lingkaran (Agar konsisten dengan AssessmentCard)
+        Surface(
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+            modifier = Modifier.size(44.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(22.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+
+        Spacer(Modifier.width(16.dp))
+
+        Column {
+            Text(
+                label,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                value,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+    }
+}
+
+// Helper untuk Item Vital (Suhu, Muntah, Popok)
+@Composable
+fun VitalItem(icon: ImageVector, label: String, value: String) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth() // Pastikan mengisi ruang weight
+    ) {
+        Icon(
+            icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(28.dp) // Icon diperbesar sedikit
+        )
+        Spacer(Modifier.height(6.dp))
+        Text(
+            label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            value,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+    }
+}
+
 @Composable
 fun AssessmentCard(
     title: String,
@@ -330,7 +485,7 @@ fun AssessmentCard(
     ) {
         Column(
             modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -359,22 +514,33 @@ fun AssessmentCard(
                     modifier = Modifier.padding(vertical = 4.dp)
                 )
             } else {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     items.forEach { item ->
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Circle,
-                                contentDescription = null,
-                                modifier = Modifier.size(8.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            // Icon Dinamis dari ScoringEngine
+                            Surface(
+                                shape = CircleShape,
+                                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                                modifier = Modifier.size(40.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        imageVector = ScoringEngine.getRiskIcon(item), // Panggil dari ScoringEngine
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+
                             Text(
                                 item,
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontWeight = FontWeight.Medium
                             )
                         }
                     }

@@ -40,7 +40,9 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
     var diapers by remember { mutableStateOf("") }
     var appetite by remember { mutableStateOf(3f) }
     var stoolFreq by remember { mutableStateOf("") }
-    var stoolColor by remember { mutableStateOf("Brown") }
+
+    // UPDATE: Default value dalam Bahasa Indonesia
+    var stoolColor by remember { mutableStateOf("Coklat") }
 
     var symptomCough by remember { mutableStateOf(false) }
     var symptomRash by remember { mutableStateOf(false) }
@@ -48,7 +50,6 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
     var symptomDifficultBreath by remember { mutableStateOf(false) }
     var symptomHardToNurse by remember { mutableStateOf(false) }
 
-    // Validasi sederhana
     val isFormValid = temp.isNotBlank() && vomit.isNotBlank() && diapers.isNotBlank() && stoolFreq.isNotBlank()
     val history by vm.history.collectAsState()
 
@@ -100,7 +101,7 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
             // --- SECTION 1: Identitas (Gender) ---
             item {
                 ModernCard(
-                    title = "Siapa yang diperiksa?",
+                    title = "Jenis Kelamin Anak",
                     icon = Icons.Outlined.Person
                 ) {
                     Row(
@@ -145,7 +146,7 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
                             value = vomit,
                             onValueChange = { vomit = it },
                             label = "Muntah",
-                            suffix = "x",
+                            suffix = "x / hari",
                             keyboardType = KeyboardType.Number,
                             leadingIcon = Icons.Outlined.Sick
                         )
@@ -154,7 +155,7 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
                             value = diapers,
                             onValueChange = { diapers = it },
                             label = "Popok Basah",
-                            suffix = "x",
+                            suffix = "x / hari",
                             keyboardType = KeyboardType.Number,
                             leadingIcon = Icons.Outlined.WaterDrop
                         )
@@ -179,21 +180,19 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                            // UPDATE: Background Ungu (Primary), Teks Putih
                             Surface(
-                                color = MaterialTheme.colorScheme.primary, // Background Ungu
+                                color = MaterialTheme.colorScheme.primary,
                                 shape = RoundedCornerShape(8.dp)
                             ) {
                                 Text(
                                     "${appetite.toInt()}/5",
                                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                                     style = MaterialTheme.typography.labelLarge,
-                                    color = Color.White // Teks Putih
+                                    color = Color.White
                                 )
                             }
                         }
 
-                        // Slider dengan Custom Thumb (Bullet Style)
                         Slider(
                             value = appetite,
                             onValueChange = { appetite = it },
@@ -252,13 +251,14 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
                             onValueChange = { stoolFreq = it },
                             label = "Frekuensi",
                             placeholder = "0",
-                            suffix = "x",
+                            suffix = "x / hari",
                             keyboardType = KeyboardType.Number,
                             modifier = Modifier.weight(1f)
                         )
 
                         var expandedColor by remember { mutableStateOf(false) }
-                        val colors = listOf("Brown", "Yellow", "Green", "Pale White", "Black", "Bloody")
+
+                        val colors = listOf("Coklat", "Kuning", "Hijau", "Putih Pucat", "Hitam", "Berdarah")
 
                         ExposedDropdownMenuBox(
                             expanded = expandedColor,
@@ -299,7 +299,7 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
                 }
             }
 
-            // --- SECTION 5: Gejala Tambahan (GRID) ---
+            // --- SECTION 5: Gejala Tambahan ---
             item {
                 ModernCard(
                     title = "Gejala Tambahan",
@@ -356,6 +356,7 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
                             stoolColor = stoolColor,
                             symptoms = symptoms
                         )
+                        navController.currentBackStackEntry?.savedStateHandle?.set("isHistoryView", false)
                         navController.currentBackStackEntry?.savedStateHandle?.set("healthInput", input)
                         navController.navigate("result")
                     },
@@ -365,15 +366,11 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
                         .shadow(if (isFormValid) 8.dp else 0.dp, RoundedCornerShape(16.dp)),
                     enabled = isFormValid,
                     colors = ButtonDefaults.buttonColors(
-                        // Active: Background Ungu (Primary), Teks Putih
                         containerColor = MaterialTheme.colorScheme.primary,
                         contentColor = Color.White,
-
-                        // Inactive: Background Surface (Putih/Transparan), Teks Ungu (Primary)
                         disabledContainerColor = MaterialTheme.colorScheme.surface,
                         disabledContentColor = MaterialTheme.colorScheme.primary
                     ),
-                    // Border Ungu hanya saat inactive
                     border = if (!isFormValid) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
                     shape = RoundedCornerShape(16.dp)
                 ) {
@@ -404,14 +401,11 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
             } else {
                 items(history) { item ->
                     HistoryCard(item) {
-                        val inputData = navController.currentBackStackEntry?.savedStateHandle
-                            ?.get<HealthCheckInput>("healthInput_${item.timestamp}")
-
-                        navController.currentBackStackEntry?.savedStateHandle?.set("detailItem", item)
-                        if (inputData != null) {
-                            navController.currentBackStackEntry?.savedStateHandle?.set("detailInput", inputData)
+                        if (item.inputData != null) {
+                            navController.currentBackStackEntry?.savedStateHandle?.set("healthInput", item.inputData)
+                            navController.currentBackStackEntry?.savedStateHandle?.set("isHistoryView", true)
+                            navController.navigate("result")
                         }
-                        navController.navigate("detail")
                     }
                 }
             }
