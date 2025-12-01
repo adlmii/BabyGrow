@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -17,6 +20,14 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val properties = Properties()
+        val localPropertiesFile = project.rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            properties.load(FileInputStream(localPropertiesFile))
+        }
+        val baseUrl = properties.getProperty("BASE_URL_BABYGROW") ?: ""
+        buildConfigField("String", "BASE_URL", "\"$baseUrl\"")
     }
 
     buildTypes {
@@ -37,6 +48,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true // <--- WAJIB: Aktifkan fitur BuildConfig
     }
 }
 
@@ -69,8 +81,12 @@ dependencies {
     // Activity Compose
     implementation("androidx.activity:activity-compose:1.9.3")
 
-    // Material3 Extended Icons
+    // Material3 Extended Icons (Untuk icon Lightbulb, dll)
     implementation("androidx.compose.material:material-icons-extended:1.7.6")
+
+    // Networking (Retrofit & GSON)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
 
     // Testing
     testImplementation(libs.junit)

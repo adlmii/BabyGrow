@@ -82,6 +82,16 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
                         )
                     }
                 },
+                // [BAGIAN BARU] Tombol Navigasi ke Halaman Artikel (API)
+                actions = {
+                    IconButton(onClick = { navController.navigate("articles") }) {
+                        Icon(
+                            imageVector = Icons.Outlined.Lightbulb, // Ikon Lampu
+                            contentDescription = "Tips Edukasi",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 ),
