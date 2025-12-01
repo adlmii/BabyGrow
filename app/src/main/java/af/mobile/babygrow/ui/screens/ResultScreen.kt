@@ -1,5 +1,6 @@
 package af.mobile.babygrow.ui.screens
 
+import androidx.activity.compose.BackHandler // [WAJIB IMPORT INI]
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -19,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -29,7 +29,7 @@ import androidx.navigation.NavHostController
 import af.mobile.babygrow.ui.model.HealthCheckInput
 import af.mobile.babygrow.ui.model.HealthCheckSummary
 import af.mobile.babygrow.ui.theme.*
-import af.mobile.babygrow.ui.util.ScoringEngine // Import ScoringEngine
+import af.mobile.babygrow.ui.util.ScoringEngine
 import af.mobile.babygrow.ui.viewmodel.ResultViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,9 +58,10 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
         else -> Icons.Outlined.CheckCircle
     }
 
-    // Helper function untuk handle back button
+    // --- LOGIKA PENYIMPANAN DATA ---
     fun handleBackButton() {
         if (!isHistoryView) {
+            // Simpan ke History hanya jika BUKAN mode lihat riwayat
             val summary = HealthCheckSummary(
                 timestamp = System.currentTimeMillis(),
                 riskLevel = ui.riskLevel,
@@ -68,7 +69,10 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
                 shortRecommendation = ui.recommendationShort,
                 inputData = input
             )
+            // Kirim data balik ke InputScreen
             navController.previousBackStackEntry?.savedStateHandle?.set("healthResult", summary)
+
+            // Opsional: Simpan input state agar form tidak hilang total (jika diinginkan)
             input?.let {
                 navController.previousBackStackEntry?.savedStateHandle?.set(
                     "healthInput_${summary.timestamp}", it
@@ -77,6 +81,13 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
         }
         navController.popBackStack()
     }
+
+    // --- [PERBAIKAN UTAMA] ---
+    // Menangkap tombol Back Fisik/Gesture HP
+    BackHandler {
+        handleBackButton()
+    }
+    // -------------------------
 
     val animatedColor by animateColorAsState(
         targetValue = riskColor,
@@ -333,7 +344,7 @@ fun InputDataCard(input: HealthCheckInput) {
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
-            modifier = Modifier.padding(24.dp), // Padding diperbesar sedikit agar lega
+            modifier = Modifier.padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             // Header
@@ -365,7 +376,6 @@ fun InputDataCard(input: HealthCheckInput) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    // Menggunakan Box dengan weight agar terbagi rata 3 kolom
                     Box(modifier = Modifier.weight(1f)) {
                         VitalItem(Icons.Outlined.Thermostat, "Suhu", "${input.tempC ?: "-"}°C")
                     }
@@ -380,16 +390,14 @@ fun InputDataCard(input: HealthCheckInput) {
 
             HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
 
-            // 2. Section Lainnya (List Style dengan Icon Bulat)
+            // 2. Section Lainnya
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                // Nafsu Makan
                 DataRowItem(
                     icon = Icons.Outlined.Restaurant,
                     label = "Nafsu Makan",
                     value = ScoringEngine.getAppetiteLabel(input.appetiteScore)
                 )
 
-                // Pencernaan
                 DataRowItem(
                     icon = Icons.Outlined.Spa,
                     label = "Pencernaan (BAB)",
@@ -400,14 +408,12 @@ fun InputDataCard(input: HealthCheckInput) {
     }
 }
 
-// Helper untuk Baris Data (Nafsu Makan & Pencernaan)
 @Composable
 fun DataRowItem(icon: ImageVector, label: String, value: String) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Container Icon Lingkaran (Agar konsisten dengan AssessmentCard)
         Surface(
             shape = CircleShape,
             color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
@@ -441,18 +447,17 @@ fun DataRowItem(icon: ImageVector, label: String, value: String) {
     }
 }
 
-// Helper untuk Item Vital (Suhu, Muntah, Popok)
 @Composable
 fun VitalItem(icon: ImageVector, label: String, value: String) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxWidth() // Pastikan mengisi ruang weight
+        modifier = Modifier.fillMaxWidth()
     ) {
         Icon(
             icon,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(28.dp) // Icon diperbesar sedikit
+            modifier = Modifier.size(28.dp)
         )
         Spacer(Modifier.height(6.dp))
         Text(
@@ -520,7 +525,6 @@ fun AssessmentCard(
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Icon Dinamis dari ScoringEngine
                             Surface(
                                 shape = CircleShape,
                                 color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
@@ -528,7 +532,7 @@ fun AssessmentCard(
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Icon(
-                                        imageVector = ScoringEngine.getRiskIcon(item), // Panggil dari ScoringEngine
+                                        imageVector = ScoringEngine.getRiskIcon(item),
                                         contentDescription = null,
                                         modifier = Modifier.size(20.dp),
                                         tint = MaterialTheme.colorScheme.primary

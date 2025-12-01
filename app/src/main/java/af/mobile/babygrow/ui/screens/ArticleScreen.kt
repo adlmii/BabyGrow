@@ -1,5 +1,6 @@
 package af.mobile.babygrow.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -7,28 +8,30 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.icons.outlined.Lightbulb
+import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController // Import NavController
+import androidx.navigation.NavHostController
 import af.mobile.babygrow.data.model.Article
 import af.mobile.babygrow.ui.viewmodel.ArticleViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ArticleScreen(navController: NavHostController? = null, viewModel: ArticleViewModel = viewModel()) {
-
+fun ArticleScreen(
+    navController: NavHostController? = null,
+    viewModel: ArticleViewModel = viewModel()
+) {
     val articles by viewModel.articles.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.errorMessage.collectAsState()
 
-    // Otomatis ambil data saat halaman dibuka
     LaunchedEffect(Unit) {
         if (articles.isEmpty()) {
             viewModel.fetchArticles()
@@ -47,7 +50,6 @@ fun ArticleScreen(navController: NavHostController? = null, viewModel: ArticleVi
                     )
                 },
                 navigationIcon = {
-                    // Tombol Back (Hanya muncul jika navController diberikan)
                     if (navController != null) {
                         IconButton(onClick = { navController.popBackStack() }) {
                             Icon(Icons.Rounded.ArrowBack, contentDescription = "Kembali")
@@ -71,31 +73,38 @@ fun ArticleScreen(navController: NavHostController? = null, viewModel: ArticleVi
                     CircularProgressIndicator()
                 }
                 error != null -> {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(24.dp)
+                    ) {
                         Text(
-                            text = "Terjadi Kesalahan",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.error
+                            text = error ?: "Terjadi Kesalahan",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.error,
+                            textAlign = TextAlign.Center
                         )
-                        Text(
-                            text = error ?: "",
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(horizontal = 32.dp, vertical = 8.dp)
-                        )
+                        Spacer(modifier = Modifier.height(16.dp))
                         Button(onClick = { viewModel.fetchArticles() }) {
                             Text("Coba Lagi")
                         }
                     }
                 }
                 else -> {
-                    // List Artikel
                     LazyColumn(
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                         modifier = Modifier.fillMaxSize()
                     ) {
                         items(articles) { article ->
-                            ArticleItem(article)
+                            ArticleItem(
+                                article = article,
+                                onClick = {
+                                    if (navController != null) {
+                                        navController.currentBackStackEntry?.savedStateHandle?.set("selected_article", article)
+                                        navController.navigate("article_detail")
+                                    }
+                                }
+                            )
                         }
                     }
                 }
@@ -105,16 +114,17 @@ fun ArticleScreen(navController: NavHostController? = null, viewModel: ArticleVi
 }
 
 @Composable
-fun ArticleItem(article: Article) {
+fun ArticleItem(article: Article, onClick: () -> Unit) {
     Card(
         elevation = CardDefaults.cardElevation(2.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // Ikon hiasan pengganti gambar
                 Surface(
                     shape = RoundedCornerShape(8.dp),
                     color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
@@ -130,26 +140,27 @@ fun ArticleItem(article: Article) {
                     }
                 }
                 Spacer(modifier = Modifier.width(16.dp))
-
-                // Judul Artikel
                 Text(
-                    text = article.title.replaceFirstChar { it.uppercase() },
+                    text = article.title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
+                )
+                Icon(
+                    imageVector = Icons.Outlined.ChevronRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-
             Spacer(modifier = Modifier.height(12.dp))
-
-            // Isi Artikel
             Text(
-                text = article.content.replaceFirstChar { it.uppercase() },
+                text = article.content,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 4,
+                maxLines = 3,
                 overflow = TextOverflow.Ellipsis,
                 lineHeight = MaterialTheme.typography.bodyMedium.lineHeight * 1.2
             )

@@ -8,37 +8,62 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.io.IOException // Import ini untuk mendeteksi error koneksi
 
 class ArticleViewModel : ViewModel() {
 
-    // Menyimpan daftar artikel
+    // --- STATE LIST ARTIKEL ---
     private val _articles = MutableStateFlow<List<Article>>(emptyList())
     val articles: StateFlow<List<Article>> = _articles.asStateFlow()
 
-    // Menyimpan status loading (sedang memuat atau tidak)
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    // Menyimpan pesan error jika gagal
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
-    // Fungsi yang dipanggil UI untuk minta data
+    // --- STATE DETAIL ARTIKEL ---
+    private val _selectedArticleData = MutableStateFlow<Article?>(null)
+    val selectedArticleData: StateFlow<Article?> = _selectedArticleData.asStateFlow()
+
     fun fetchArticles() {
         viewModelScope.launch {
             _isLoading.value = true
-            _errorMessage.value = null // Reset error
-
+            _errorMessage.value = null
             try {
-                // Proses ambil data di background
                 val response = RetrofitClient.instance.getArticles()
                 _articles.value = response
             } catch (e: Exception) {
-                _errorMessage.value = "Gagal memuat: ${e.message}"
+                // [BAGIAN INI YANG MENGUBAH PESAN ERROR]
+                // Kita cek jenis errornya biar lebih pintar
+                if (e is IOException) {
+                    // Error Jaringan (Offline / DNS / Timeout)
+                    _errorMessage.value = "Yah, gagal terhubung ke server. Periksa koneksi internetmu ya!"
+                } else {
+                    // Error Lainnya (Server Error / Format Data Salah)
+                    _errorMessage.value = "Terjadi gangguan teknis. Coba lagi nanti ya."
+                }
+
+                // Print error asli di Logcat buat debugging (opsional)
                 e.printStackTrace()
             } finally {
                 _isLoading.value = false
             }
         }
+    }
+
+    fun fetchArticleDetail(id: String) {
+        viewModelScope.launch {
+            try {
+                val freshData = RetrofitClient.instance.getArticleDetail(id)
+                _selectedArticleData.value = freshData
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun resetSelectedArticle() {
+        _selectedArticleData.value = null
     }
 }

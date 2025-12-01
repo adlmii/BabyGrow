@@ -1,5 +1,6 @@
 package af.mobile.babygrow
 
+import af.mobile.babygrow.ui.screens.ArticleDetailScreen
 import af.mobile.babygrow.ui.screens.ArticleScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -54,6 +55,10 @@ fun AppNavHost(navController: NavHostController) {
 
         composable("articles") {
             ArticleScreen(navController = navController)
+        }
+
+        composable("article_detail") {
+            ArticleDetailScreen(navController = navController)
         }
 
     }
