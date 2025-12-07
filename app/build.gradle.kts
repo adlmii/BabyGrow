@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-    namespace = "af.mobile.babygrow"
+    namespace = "af.mobile.healthycheck"
     compileSdk = 36
 
     defaultConfig {
@@ -48,7 +48,7 @@ android {
     }
     buildFeatures {
         compose = true
-        buildConfig = true // <--- WAJIB: Aktifkan fitur BuildConfig
+        buildConfig = true
     }
 }
 
