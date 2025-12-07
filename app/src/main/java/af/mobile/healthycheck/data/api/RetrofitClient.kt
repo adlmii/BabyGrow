@@ -1,13 +1,10 @@
 package af.mobile.healthycheck.data.api
 
-import af.mobile.healthycheck.BuildConfig
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
-
-    // Mengambil URL dari BuildConfig
-    private const val BASE_URL = BuildConfig.BASE_URL
+    private const val BASE_URL = "https://growtrackapp-8bab5-default-rtdb.asia-southeast1.firebasedatabase.app/"
 
     val instance: ApiService by lazy {
         Retrofit.Builder()

@@ -6,12 +6,15 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class Article(
-    val id: String,
-    val title: String,
+    @SerializedName("id")
+    val id: String = "0",
+
+    @SerializedName("title")
+    val title: String = "",
 
     @SerializedName("content")
-    val content: String,
+    val content: String = "",
 
     @SerializedName("source_url")
-    val sourceUrl: String
+    val sourceUrl: String = ""
 ) : Parcelable

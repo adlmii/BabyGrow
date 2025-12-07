@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "967409424950",
+    "firebase_url": "https://growtrackapp-8bab5-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "growtrackapp-8bab5",
+    "storage_bucket": "growtrackapp-8bab5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:967409424950:android:ce1c8a1a4c31b695761697",
+        "android_client_info": {
+          "package_name": "af.mobile.babygrow"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCTWfQZD7_9FM4qZkb6NAf2j8qB_yI8FNI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:967409424950:android:8b647050369d4e5f761697",
+        "android_client_info": {
+          "package_name": "ph.mobile.projectpam2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCTWfQZD7_9FM4qZkb6NAf2j8qB_yI8FNI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

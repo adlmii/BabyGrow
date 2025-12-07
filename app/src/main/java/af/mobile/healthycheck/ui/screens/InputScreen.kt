@@ -34,34 +34,45 @@ import af.mobile.healthycheck.ui.viewmodel.InputViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel()) {
+    // --- STATE FORM INPUT ---
     var gender by remember { mutableStateOf("M") }
     var temp by remember { mutableStateOf("") }
     var vomit by remember { mutableStateOf("") }
     var diapers by remember { mutableStateOf("") }
     var appetite by remember { mutableStateOf(3f) }
     var stoolFreq by remember { mutableStateOf("") }
-
-    // UPDATE: Default value dalam Bahasa Indonesia
     var stoolColor by remember { mutableStateOf("Coklat") }
 
+    // State Gejala Tambahan
     var symptomCough by remember { mutableStateOf(false) }
     var symptomRash by remember { mutableStateOf(false) }
     var symptomFlu by remember { mutableStateOf(false) }
     var symptomDifficultBreath by remember { mutableStateOf(false) }
     var symptomHardToNurse by remember { mutableStateOf(false) }
 
+    // Validasi Form Sederhana
     val isFormValid = temp.isNotBlank() && vomit.isNotBlank() && diapers.isNotBlank() && stoolFreq.isNotBlank()
-    val history by vm.history.collectAsState()
 
+    // --- STATE DARI VIEWMODEL ---
+    val history by vm.history.collectAsState()
+    val isLoading by vm.isLoading.collectAsState() // [BARU] Loading State
+
+    // --- HANDLE DATA BALIKAN DARI RESULT SCREEN ---
+    // (Jika ada data baru disimpan, tambahkan ke list lokal)
     val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
     val resultLive = savedStateHandle?.getLiveData<HealthCheckSummary>("healthResult")
     val returnedSummary = resultLive?.observeAsState()?.value
 
     LaunchedEffect(returnedSummary) {
         returnedSummary?.let { summary ->
-            vm.addHistory(summary)
+            vm.addHistory(summary) // Update list lokal instan
             savedStateHandle.remove<HealthCheckSummary>("healthResult")
         }
+    }
+
+    // Refresh history saat halaman dibuka kembali (agar data yg dihapus hilang)
+    LaunchedEffect(Unit) {
+        vm.fetchHistory()
     }
 
     Scaffold(
@@ -82,11 +93,10 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
                         )
                     }
                 },
-                // [BAGIAN BARU] Tombol Navigasi ke Halaman Artikel (API)
                 actions = {
                     IconButton(onClick = { navController.navigate("articles") }) {
                         Icon(
-                            imageVector = Icons.Outlined.Lightbulb, // Ikon Lampu
+                            imageVector = Icons.Outlined.Lightbulb,
                             contentDescription = "Tips Edukasi",
                             tint = MaterialTheme.colorScheme.primary
                         )
@@ -208,9 +218,7 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
                             onValueChange = { appetite = it },
                             valueRange = 1f..5f,
                             steps = 3,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(48.dp),
+                            modifier = Modifier.fillMaxWidth().height(48.dp),
                             colors = SliderDefaults.colors(
                                 thumbColor = MaterialTheme.colorScheme.primary,
                                 activeTrackColor = MaterialTheme.colorScheme.primary,
@@ -231,16 +239,8 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(
-                                "Tidak Mau",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                            Text(
-                                "Sangat Lahap",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.primary
-                            )
+                            Text("Tidak Mau", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.error)
+                            Text("Sangat Lahap", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
                         }
                     }
                 }
@@ -267,7 +267,6 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
                         )
 
                         var expandedColor by remember { mutableStateOf(false) }
-
                         val colors = listOf("Coklat", "Kuning", "Hijau", "Putih Pucat", "Hitam", "Berdarah")
 
                         ExposedDropdownMenuBox(
@@ -281,9 +280,7 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
                                 label = { Text("Warna") },
                                 readOnly = true,
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedColor) },
-                                modifier = Modifier
-                                    .menuAnchor()
-                                    .fillMaxWidth(),
+                                modifier = Modifier.menuAnchor().fillMaxWidth(),
                                 shape = RoundedCornerShape(12.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -317,27 +314,15 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Box(modifier = Modifier.weight(1f)) {
-                                SymptomCheckbox("Batuk", symptomCough) { symptomCough = it }
-                            }
-                            Box(modifier = Modifier.weight(1f)) {
-                                SymptomCheckbox("Ruam Kulit", symptomRash) { symptomRash = it }
-                            }
+                            Box(modifier = Modifier.weight(1f)) { SymptomCheckbox("Batuk", symptomCough) { symptomCough = it } }
+                            Box(modifier = Modifier.weight(1f)) { SymptomCheckbox("Ruam Kulit", symptomRash) { symptomRash = it } }
                         }
-
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Box(modifier = Modifier.weight(1f)) {
-                                SymptomCheckbox("Flu / Pilek", symptomFlu) { symptomFlu = it }
-                            }
-                            Box(modifier = Modifier.weight(1f)) {
-                                SymptomCheckbox("Sesak Napas", symptomDifficultBreath) { symptomDifficultBreath = it }
-                            }
+                            Box(modifier = Modifier.weight(1f)) { SymptomCheckbox("Flu / Pilek", symptomFlu) { symptomFlu = it } }
+                            Box(modifier = Modifier.weight(1f)) { SymptomCheckbox("Sesak Napas", symptomDifficultBreath) { symptomDifficultBreath = it } }
                         }
-
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Box(modifier = Modifier.weight(1f)) {
-                                SymptomCheckbox("Sulit Menyusu", symptomHardToNurse) { symptomHardToNurse = it }
-                            }
+                            Box(modifier = Modifier.weight(1f)) { SymptomCheckbox("Sulit Menyusu", symptomHardToNurse) { symptomHardToNurse = it } }
                             Spacer(modifier = Modifier.weight(1f))
                         }
                     }
@@ -357,7 +342,7 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
 
                         val input = HealthCheckInput(
                             gender = gender,
-                            ageMonths = 12,
+                            ageMonths = 12, // Bisa diubah jadi inputan jika perlu
                             tempC = temp.toDoubleOrNull(),
                             vomitCount = vomit.toIntOrNull() ?: 0,
                             wetDiaperCount = diapers.toIntOrNull() ?: 0,
@@ -377,24 +362,17 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
                     enabled = isFormValid,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = Color.White,
-                        disabledContainerColor = MaterialTheme.colorScheme.surface,
-                        disabledContentColor = MaterialTheme.colorScheme.primary
+                        contentColor = Color.White
                     ),
-                    border = if (!isFormValid) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
                     shape = RoundedCornerShape(16.dp)
                 ) {
-                    Text(
-                        "Analisa Kesehatan",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Text("Analisa Kesehatan", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Spacer(Modifier.width(8.dp))
                     Icon(Icons.Rounded.CheckCircle, contentDescription = null)
                 }
             }
 
-            // --- HISTORY LIST ---
+            // --- HISTORY LIST HEADER ---
             item {
                 Text(
                     "Riwayat Pemeriksaan",
@@ -404,16 +382,30 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
                 )
             }
 
-            if (history.isEmpty()) {
+            // --- HISTORY CONTENT ---
+            if (isLoading) {
                 item {
-                    EmptyStateCard()
+                    Box(
+                        modifier = Modifier.fillMaxWidth().padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
+            } else if (history.isEmpty()) {
+                item { EmptyStateCard() }
             } else {
                 items(history) { item ->
                     HistoryCard(item) {
                         if (item.inputData != null) {
-                            navController.currentBackStackEntry?.savedStateHandle?.set("healthInput", item.inputData)
-                            navController.currentBackStackEntry?.savedStateHandle?.set("isHistoryView", true)
+                            val savedState = navController.currentBackStackEntry?.savedStateHandle
+
+                            savedState?.set("healthInput", item.inputData)
+
+                            savedState?.set("isHistoryView", true)
+
+                            savedState?.set("fullSummary", item)
+
                             navController.navigate("result")
                         }
                     }
@@ -423,31 +415,23 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
     }
 }
 
+// --- HELPER COMPOSABLES ---
+
 @Composable
-fun SymptomCheckbox(
-    text: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
+fun SymptomCheckbox(text: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
             .clickable { onCheckedChange(!checked) }
-            .background(
-                if (checked) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-            )
+            .background(if (checked) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
             .padding(horizontal = 12.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Checkbox(
             checked = checked,
             onCheckedChange = null,
-            colors = CheckboxDefaults.colors(
-                checkedColor = MaterialTheme.colorScheme.primary,
-                checkmarkColor = MaterialTheme.colorScheme.onPrimary
-            ),
+            colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colorScheme.primary),
             modifier = Modifier.size(20.dp)
         )
         Spacer(Modifier.width(8.dp))
@@ -466,15 +450,11 @@ fun EmptyStateCard() {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-        ),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(32.dp),
+            modifier = Modifier.fillMaxWidth().padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {

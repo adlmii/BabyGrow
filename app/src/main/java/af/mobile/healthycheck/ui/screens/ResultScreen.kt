@@ -1,18 +1,18 @@
 package af.mobile.healthycheck.ui.screens
 
-import androidx.activity.compose.BackHandler // [WAJIB IMPORT INI]
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Home
-import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -35,17 +35,29 @@ import af.mobile.healthycheck.ui.viewmodel.ResultViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewModel()) {
+    // 1. Ambil Data dari Navigasi
     val input = navController.previousBackStackEntry?.savedStateHandle?.get<HealthCheckInput>("healthInput")
-
-    // Ambil flag apakah ini mode lihat riwayat
     val isHistoryView = navController.previousBackStackEntry?.savedStateHandle?.get<Boolean>("isHistoryView") ?: false
 
+    // Ambil Data Summary Lengkap (Penting untuk mendapatkan ID saat menghapus)
+    val summaryData = navController.previousBackStackEntry?.savedStateHandle?.get<HealthCheckSummary>("fullSummary")
+
+    // 2. Logic Evaluasi (Hitung / Simpan)
     LaunchedEffect(input) {
-        input?.let { vm.evaluate(it) }
+        if (input != null) {
+            if (isHistoryView) {
+                // Mode History: Hanya hitung ulang skor untuk ditampilkan
+                vm.evaluate(input)
+            } else {
+                // Mode Input Baru: Hitung skor DAN Simpan ke Firebase (POST)
+                vm.evaluateAndSave(input)
+            }
+        }
     }
 
     val ui by vm.uiState.collectAsState()
 
+    // Setup Warna & Icon Utama berdasarkan Level Risiko
     val riskColor = when(ui.riskLevel.uppercase()) {
         "HIGH" -> StatusDanger
         "MEDIUM" -> StatusWarning
@@ -58,10 +70,10 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
         else -> Icons.Outlined.CheckCircle
     }
 
-    // --- LOGIKA PENYIMPANAN DATA ---
+    // --- HANDLE BACK BUTTON ---
     fun handleBackButton() {
         if (!isHistoryView) {
-            // Simpan ke History hanya jika BUKAN mode lihat riwayat
+            // Jika input baru, kirim data summary ke InputScreen agar list terupdate instan
             val summary = HealthCheckSummary(
                 timestamp = System.currentTimeMillis(),
                 riskLevel = ui.riskLevel,
@@ -69,10 +81,9 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
                 shortRecommendation = ui.recommendationShort,
                 inputData = input
             )
-            // Kirim data balik ke InputScreen
             navController.previousBackStackEntry?.savedStateHandle?.set("healthResult", summary)
 
-            // Opsional: Simpan input state agar form tidak hilang total (jika diinginkan)
+            // Simpan state input (opsional, agar form tidak hilang total)
             input?.let {
                 navController.previousBackStackEntry?.savedStateHandle?.set(
                     "healthInput_${summary.timestamp}", it
@@ -82,16 +93,51 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
         navController.popBackStack()
     }
 
-    // --- [PERBAIKAN UTAMA] ---
-    // Menangkap tombol Back Fisik/Gesture HP
+    // Tangkap tombol Back Hardware/Gesture
     BackHandler {
         handleBackButton()
     }
-    // -------------------------
 
+    // --- DIALOG KONFIRMASI HAPUS ---
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Hapus Riwayat?") },
+            text = { Text("Data pemeriksaan ini akan dihapus permanen dari database.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteDialog = false
+                        // Eksekusi Hapus via ViewModel
+                        if (summaryData != null && summaryData.id.isNotEmpty()) {
+                            vm.deleteHistory(summaryData.id) {
+                                // Callback Sukses: Kembali ke halaman depan
+                                navController.popBackStack()
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = StatusDanger)
+                ) {
+                    Text("Hapus", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Batal")
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            textContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+
+    // Animasi UI
     val animatedColor by animateColorAsState(
         targetValue = riskColor,
-        animationSpec = tween(600), label = ""
+        animationSpec = tween(600), label = "ColorAnim"
     )
 
     var visible by remember { mutableStateOf(false) }
@@ -102,7 +148,7 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessLow
-        ), label = ""
+        ), label = "ScaleAnim"
     )
 
     Scaffold(
@@ -118,6 +164,18 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
                 navigationIcon = {
                     IconButton(onClick = { handleBackButton() }) {
                         Icon(Icons.Rounded.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                // Action Kanan: Tombol Hapus (Hanya muncul di Mode History)
+                actions = {
+                    if (isHistoryView) {
+                        IconButton(onClick = { showDeleteDialog = true }) {
+                            Icon(
+                                imageVector = Icons.Filled.Delete, // [UBAH] Pakai Filled/Solid
+                                contentDescription = "Hapus Data",
+                                tint = StatusDanger // Warna Merah
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -136,7 +194,7 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
             verticalArrangement = Arrangement.spacedBy(24.dp),
             contentPadding = PaddingValues(vertical = 24.dp)
         ) {
-            // --- 1. KARTU UTAMA (Risk Level) ---
+            // --- 1. KARTU UTAMA (RISK LEVEL) ---
             item {
                 Card(
                     modifier = Modifier
@@ -167,6 +225,7 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(20.dp)
                         ) {
+                            // Icon Besar
                             Box(
                                 modifier = Modifier
                                     .size(88.dp)
@@ -181,6 +240,7 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
                                 )
                             }
 
+                            // Teks Level & Warna Dinamis
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(
                                     "Tingkat Risiko",
@@ -196,6 +256,7 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
                                 )
                             }
 
+                            // Badge Skor
                             Surface(
                                 shape = RoundedCornerShape(50),
                                 color = animatedColor,
@@ -208,6 +269,70 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.surface
                                 )
+                            }
+
+                            // --- STATUS SIMPAN (UI Profesional) ---
+                            // Menampilkan status simpan/hapus dengan Icon Vector
+                            if (ui.saveStatus.isNotEmpty()) {
+
+                                val (statusIcon, statusColor, bgColor) = when {
+                                    ui.saveStatus.contains("Berhasil") || ui.saveStatus.contains("Tersimpan") -> Triple(
+                                        Icons.Rounded.CloudDone,
+                                        StatusSuccess,
+                                        StatusSuccess.copy(alpha = 0.1f)
+                                    )
+                                    ui.saveStatus.contains("Gagal") -> Triple(
+                                        Icons.Rounded.CloudOff,
+                                        StatusDanger,
+                                        StatusDanger.copy(alpha = 0.1f)
+                                    )
+                                    ui.saveStatus.contains("Menghapus") -> Triple(
+                                        Icons.Filled.Delete,
+                                        StatusDanger,
+                                        StatusDanger.copy(alpha = 0.1f)
+                                    )
+                                    else -> Triple(
+                                        Icons.Rounded.CloudUpload,
+                                        MaterialTheme.colorScheme.primary,
+                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = bgColor,
+                                    border = BorderStroke(1.dp, statusColor.copy(alpha = 0.3f))
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                                    ) {
+                                        // Animasi Loading jika sedang proses
+                                        if (ui.saveStatus.contains("Menyimpan") || ui.saveStatus.contains("Menghapus")) {
+                                            CircularProgressIndicator(
+                                                modifier = Modifier.size(18.dp),
+                                                strokeWidth = 2.dp,
+                                                color = statusColor
+                                            )
+                                        } else {
+                                            Icon(
+                                                imageVector = statusIcon,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(20.dp),
+                                                tint = statusColor
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.width(10.dp))
+                                        Text(
+                                            text = ui.saveStatus,
+                                            style = MaterialTheme.typography.labelLarge,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = statusColor
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
@@ -222,7 +347,7 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
                     colors = CardDefaults.cardColors(
                         containerColor = animatedColor.copy(alpha = 0.1f)
                     ),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, animatedColor.copy(alpha = 0.3f))
+                    border = BorderStroke(1.dp, animatedColor.copy(alpha = 0.3f))
                 ) {
                     Column(
                         modifier = Modifier.padding(24.dp),
@@ -293,7 +418,7 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
                 }
             }
 
-            // --- 6. TOMBOL AKSI ---
+            // --- 6. TOMBOL AKSI BAWAH ---
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -305,7 +430,7 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
                             .weight(1f)
                             .height(56.dp),
                         shape = RoundedCornerShape(16.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                     ) {
                         Icon(Icons.Rounded.Home, contentDescription = null)
                         Spacer(Modifier.width(8.dp))
@@ -313,7 +438,7 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
                     }
 
                     Button(
-                        onClick = { /* TODO: Implement Share */ },
+                        onClick = { /* Implementasi Share Nanti */ },
                         modifier = Modifier
                             .weight(1f)
                             .height(56.dp)
@@ -333,7 +458,7 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
     }
 }
 
-// --- KOMPONEN UI ---
+// --- KOMPONEN UI TAMBAHAN (Helper) ---
 
 @Composable
 fun InputDataCard(input: HealthCheckInput) {
@@ -428,9 +553,7 @@ fun DataRowItem(icon: ImageVector, label: String, value: String) {
                 )
             }
         }
-
         Spacer(Modifier.width(16.dp))
-
         Column {
             Text(
                 label,
@@ -539,7 +662,6 @@ fun AssessmentCard(
                                     )
                                 }
                             }
-
                             Text(
                                 item,
                                 style = MaterialTheme.typography.bodyLarge,

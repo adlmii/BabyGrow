@@ -5,6 +5,7 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class HealthCheckSummary(
+    var id: String = "",
     val timestamp: Long,
     val riskLevel: String,
     val riskScore: Int,
