@@ -28,6 +28,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import af.mobile.healthycheck.ui.model.HealthCheckInput
 import af.mobile.healthycheck.ui.model.HealthCheckSummary
+import af.mobile.healthycheck.ui.model.RiskLevel
 import af.mobile.healthycheck.ui.theme.*
 import af.mobile.healthycheck.ui.util.ScoringEngine
 import af.mobile.healthycheck.ui.viewmodel.ResultViewModel
@@ -39,17 +40,17 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
     val input = navController.previousBackStackEntry?.savedStateHandle?.get<HealthCheckInput>("healthInput")
     val isHistoryView = navController.previousBackStackEntry?.savedStateHandle?.get<Boolean>("isHistoryView") ?: false
 
-    // Ambil Data Summary Lengkap (Penting untuk mendapatkan ID saat menghapus)
+    // Ambil Data Summary Lengkap
     val summaryData = navController.previousBackStackEntry?.savedStateHandle?.get<HealthCheckSummary>("fullSummary")
 
     // 2. Logic Evaluasi (Hitung / Simpan)
     LaunchedEffect(input) {
         if (input != null) {
             if (isHistoryView) {
-                // Mode History: Hanya hitung ulang skor untuk ditampilkan
+                // Mode History
                 vm.evaluate(input)
             } else {
-                // Mode Input Baru: Hitung skor DAN Simpan ke Firebase (POST)
+                // Mode Input Baru
                 vm.evaluateAndSave(input)
             }
         }
@@ -57,33 +58,31 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
 
     val ui by vm.uiState.collectAsState()
 
-    // Setup Warna & Icon Utama berdasarkan Level Risiko
-    val riskColor = when(ui.riskLevel.uppercase()) {
-        "HIGH" -> StatusDanger
-        "MEDIUM" -> StatusWarning
+    // Warna & Ikon Dinamis berdasarkan Risk Level
+    val riskColor = when(ui.riskLevel) {
+        RiskLevel.HIGH -> StatusDanger
+        RiskLevel.MEDIUM -> StatusWarning
         else -> StatusSuccess
     }
 
-    val riskIcon = when(ui.riskLevel.uppercase()) {
-        "HIGH" -> Icons.Outlined.WarningAmber
-        "MEDIUM" -> Icons.Outlined.ElectricBolt
+    val riskIcon = when(ui.riskLevel) {
+        RiskLevel.HIGH -> Icons.Outlined.WarningAmber
+        RiskLevel.MEDIUM -> Icons.Outlined.ElectricBolt
         else -> Icons.Outlined.CheckCircle
     }
 
     // --- HANDLE BACK BUTTON ---
     fun handleBackButton() {
         if (!isHistoryView) {
-            // Jika input baru, kirim data summary ke InputScreen agar list terupdate instan
             val summary = HealthCheckSummary(
                 timestamp = System.currentTimeMillis(),
-                riskLevel = ui.riskLevel,
+                riskLevel = ui.riskLevel.name,
                 riskScore = ui.riskScore,
                 shortRecommendation = ui.recommendationShort,
                 inputData = input
             )
             navController.previousBackStackEntry?.savedStateHandle?.set("healthResult", summary)
 
-            // Simpan state input (opsional, agar form tidak hilang total)
             input?.let {
                 navController.previousBackStackEntry?.savedStateHandle?.set(
                     "healthInput_${summary.timestamp}", it
@@ -93,7 +92,6 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
         navController.popBackStack()
     }
 
-    // Tangkap tombol Back Hardware/Gesture
     BackHandler {
         handleBackButton()
     }
@@ -110,10 +108,8 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
                 TextButton(
                     onClick = {
                         showDeleteDialog = false
-                        // Eksekusi Hapus via ViewModel
                         if (summaryData != null && summaryData.id.isNotEmpty()) {
                             vm.deleteHistory(summaryData.id) {
-                                // Callback Sukses: Kembali ke halaman depan
                                 navController.popBackStack()
                             }
                         }
@@ -171,9 +167,9 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
                     if (isHistoryView) {
                         IconButton(onClick = { showDeleteDialog = true }) {
                             Icon(
-                                imageVector = Icons.Filled.Delete, // [UBAH] Pakai Filled/Solid
+                                imageVector = Icons.Filled.Delete,
                                 contentDescription = "Hapus Data",
-                                tint = StatusDanger // Warna Merah
+                                tint = StatusDanger
                             )
                         }
                     }
@@ -234,7 +230,7 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
                             ) {
                                 Icon(
                                     imageVector = riskIcon,
-                                    contentDescription = ui.riskLevel,
+                                    contentDescription = ui.riskLevel.name,
                                     tint = animatedColor,
                                     modifier = Modifier.size(48.dp)
                                 )
@@ -248,7 +244,7 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Text(
-                                    ui.riskLevel.uppercase(),
+                                    ui.riskLevel.name,
                                     style = MaterialTheme.typography.displayMedium,
                                     fontWeight = FontWeight.Black,
                                     color = animatedColor,
@@ -271,8 +267,7 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
                                 )
                             }
 
-                            // --- STATUS SIMPAN (UI Profesional) ---
-                            // Menampilkan status simpan/hapus dengan Icon Vector
+                            // --- STATUS SIMPAN ---
                             if (ui.saveStatus.isNotEmpty()) {
 
                                 val (statusIcon, statusColor, bgColor) = when {

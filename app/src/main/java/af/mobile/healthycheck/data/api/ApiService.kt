@@ -7,6 +7,7 @@ import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface ApiService {
 
@@ -22,7 +23,11 @@ interface ApiService {
     suspend fun saveHealthCheck(@Body summary: HealthCheckSummary): Map<String, String>
 
     @GET("health_assessments.json")
-    suspend fun getHealthHistory(): Map<String, HealthCheckSummary>
+    suspend fun getHealthHistory(
+        @Query("orderBy") orderBy: String = "\"\$key\"",
+        @Query("limitToLast") limit: Int,
+        @Query("endAt") endAt: String? = null
+    ): Map<String, HealthCheckSummary>
 
     @DELETE("health_assessments/{id}.json")
     suspend fun deleteAssessment(@Path("id") id: String): retrofit2.Response<Void>

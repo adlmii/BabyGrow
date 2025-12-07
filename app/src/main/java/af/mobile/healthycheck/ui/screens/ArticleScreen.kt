@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import af.mobile.healthycheck.data.model.Article
+import af.mobile.healthycheck.ui.navigation.Screen
 import af.mobile.healthycheck.ui.viewmodel.ArticleViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -101,7 +102,7 @@ fun ArticleScreen(
                                 onClick = {
                                     if (navController != null) {
                                         navController.currentBackStackEntry?.savedStateHandle?.set("selected_article", article)
-                                        navController.navigate("article_detail")
+                                        navController.navigate(Screen.ArticleDetail.route)
                                     }
                                 }
                             )

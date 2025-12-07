@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import af.mobile.healthycheck.data.model.Article
+import af.mobile.healthycheck.ui.navigation.Screen
 import af.mobile.healthycheck.ui.viewmodel.ArticleViewModel
 
 @Composable
@@ -239,8 +240,8 @@ fun ArticleDetailScreen(
                             article = related,
                             onClick = {
                                 navController.previousBackStackEntry?.savedStateHandle?.set("selected_article", related)
-                                navController.navigate("article_detail") {
-                                    popUpTo("articles") { inclusive = false }
+                                navController.navigate(Screen.ArticleDetail.route) {
+                                    popUpTo(Screen.Articles.route) { inclusive = false }
                                 }
                             }
                         )
@@ -257,6 +258,7 @@ fun ArticleDetailScreen(
     }
 }
 
+// Compact Article Item for Related Articles
 @Composable
 fun CompactArticleItem(article: Article, onClick: () -> Unit) {
     Card(
@@ -308,6 +310,7 @@ fun CompactArticleItem(article: Article, onClick: () -> Unit) {
     }
 }
 
+// Function to format article content with styles
 fun formatArticleContent(content: String, primaryColor: Color, textColor: Color, errorColor: Color): androidx.compose.ui.text.AnnotatedString {
     return buildAnnotatedString {
         val lines = content.split("\n")

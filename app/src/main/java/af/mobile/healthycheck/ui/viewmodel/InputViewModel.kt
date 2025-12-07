@@ -2,7 +2,7 @@ package af.mobile.healthycheck.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import af.mobile.healthycheck.data.api.RetrofitClient
+import af.mobile.healthycheck.data.repository.HealthRepository
 import af.mobile.healthycheck.ui.model.HealthCheckSummary
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,15 +11,21 @@ import kotlinx.coroutines.launch
 
 class InputViewModel : ViewModel() {
 
-    // State untuk menampung list riwayat
+    private val repository = HealthRepository()
+    private val LIMIT_PER_PAGE = 5
+
     private val _history = MutableStateFlow<List<HealthCheckSummary>>(emptyList())
     val history: StateFlow<List<HealthCheckSummary>> = _history.asStateFlow()
 
-    // State untuk indikator loading
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    // Init: Otomatis ambil data saat ViewModel dibuat
+    private val _isEndOfList = MutableStateFlow(false)
+    val isEndOfList: StateFlow<Boolean> = _isEndOfList.asStateFlow()
+
+    private val _isLoadingMore = MutableStateFlow(false)
+    val isLoadingMore: StateFlow<Boolean> = _isLoadingMore.asStateFlow()
+
     init {
         fetchHistory()
     }
@@ -27,21 +33,51 @@ class InputViewModel : ViewModel() {
     fun fetchHistory() {
         viewModelScope.launch {
             _isLoading.value = true
+            _isEndOfList.value = false
             try {
-                // 1. Ambil data Map dari Firebase
-                val responseMap = RetrofitClient.instance.getHealthHistory()
-
-                // 2. Ubah Map menjadi List & Masukkan ID
-                val listData = responseMap.map { (key, value) ->
-                    value.copy(id = key)
-                }.sortedByDescending { it.timestamp }
-
+                val listData = repository.getHealthHistory(limit = LIMIT_PER_PAGE)
                 _history.value = listData
+
+                if (listData.size < LIMIT_PER_PAGE) {
+                    _isEndOfList.value = true
+                }
+
             } catch (e: Exception) {
                 e.printStackTrace()
-                _history.value = emptyList()
             } finally {
                 _isLoading.value = false
+            }
+        }
+    }
+
+    fun showLessHistory() {
+        fetchHistory()
+    }
+
+    fun loadMoreHistory() {
+        if (_isLoadingMore.value || _isEndOfList.value || _history.value.isEmpty()) return
+
+        viewModelScope.launch {
+            _isLoadingMore.value = true
+            try {
+                val lastItem = _history.value.last()
+                val lastId = lastItem.id
+
+                val newItems = repository.getHealthHistory(limit = LIMIT_PER_PAGE, endAtId = lastId)
+
+                if (newItems.isNotEmpty()) {
+                    _history.value = _history.value + newItems
+
+                    if (newItems.size < LIMIT_PER_PAGE) {
+                        _isEndOfList.value = true
+                    }
+                } else {
+                    _isEndOfList.value = true
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                _isLoadingMore.value = false
             }
         }
     }
