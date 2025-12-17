@@ -25,6 +25,7 @@ import af.mobile.healthycheck.ui.features.healthcheck.InputScreen
 import af.mobile.healthycheck.ui.features.healthcheck.ResultScreen
 import af.mobile.healthycheck.ui.features.healthcheck.ArticleScreen
 import af.mobile.healthycheck.ui.features.healthcheck.ArticleDetailScreen
+import af.mobile.healthycheck.ui.features.home.HomeScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,9 +61,14 @@ fun AppRoot() {
 fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Input.route,
+        startDestination = Screen.Home.route,
         modifier = modifier
     ) {
+
+        // --- SCREEN BARU: HomeScreen ---
+        composable(Screen.Home.route) {
+            HomeScreen(navController = navController)
+        }
 
         // --- FITUR 1: Pertumbuhan ---
         composable(Screen.Growth.route) {
