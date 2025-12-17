@@ -1,4 +1,4 @@
-package af.mobile.healthycheck.ui.viewmodel
+package af.mobile.healthycheck.ui.features.healthcheck.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

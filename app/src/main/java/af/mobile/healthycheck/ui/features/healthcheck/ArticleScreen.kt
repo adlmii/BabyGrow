@@ -1,4 +1,4 @@
-package af.mobile.healthycheck.ui.screens
+package af.mobile.healthycheck.ui.features.healthcheck
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -21,7 +21,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import af.mobile.healthycheck.data.model.Article
 import af.mobile.healthycheck.ui.navigation.Screen
-import af.mobile.healthycheck.ui.viewmodel.ArticleViewModel
+import af.mobile.healthycheck.ui.features.healthcheck.viewmodel.ArticleViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -1,4 +1,4 @@
-package af.mobile.healthycheck.ui.screens
+package af.mobile.healthycheck.ui.features.healthcheck
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -33,7 +33,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import af.mobile.healthycheck.data.model.Article
 import af.mobile.healthycheck.ui.navigation.Screen
-import af.mobile.healthycheck.ui.viewmodel.ArticleViewModel
+import af.mobile.healthycheck.ui.features.healthcheck.viewmodel.ArticleViewModel
+import androidx.compose.ui.text.AnnotatedString
 
 @Composable
 fun ArticleDetailScreen(
@@ -311,7 +312,7 @@ fun CompactArticleItem(article: Article, onClick: () -> Unit) {
 }
 
 // Function to format article content with styles
-fun formatArticleContent(content: String, primaryColor: Color, textColor: Color, errorColor: Color): androidx.compose.ui.text.AnnotatedString {
+fun formatArticleContent(content: String, primaryColor: Color, textColor: Color, errorColor: Color): AnnotatedString {
     return buildAnnotatedString {
         val lines = content.split("\n")
         lines.forEachIndexed { index, line ->

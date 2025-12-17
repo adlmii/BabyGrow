@@ -1,5 +1,11 @@
-package af.mobile.healthycheck.ui.screens
+package af.mobile.healthycheck.ui.features.healthcheck
 
+import af.mobile.healthycheck.ui.features.healthcheck.sections.AppetiteSection
+import af.mobile.healthycheck.ui.features.healthcheck.sections.DigestionSection
+import af.mobile.healthycheck.ui.features.healthcheck.sections.IdentitySection
+import af.mobile.healthycheck.ui.features.healthcheck.sections.SymptomsSection
+import af.mobile.healthycheck.ui.features.healthcheck.sections.VitalSection
+import af.mobile.healthycheck.ui.features.healthcheck.sections.historySection
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,9 +26,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import af.mobile.healthycheck.ui.model.HealthCheckInput
 import af.mobile.healthycheck.ui.model.HealthCheckSummary
-import af.mobile.healthycheck.ui.viewmodel.InputViewModel
+import af.mobile.healthycheck.ui.features.healthcheck.viewmodel.InputViewModel
 import af.mobile.healthycheck.ui.navigation.Screen
-import af.mobile.healthycheck.ui.screens.sections.* // [BARU] Import Sections
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -98,9 +103,23 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
         ) {
             // 1. INPUT SECTIONS (Panggil komponen yang sudah dipisah)
             item { IdentitySection(gender, { gender = it }, ageInput, { ageInput = it }) }
-            item { VitalSection(temp, { temp = it }, vomit, { vomit = it }, diapers, { diapers = it }) }
+            item {
+                VitalSection(
+                    temp,
+                    { temp = it },
+                    vomit,
+                    { vomit = it },
+                    diapers,
+                    { diapers = it })
+            }
             item { AppetiteSection(appetite, { appetite = it }) }
-            item { DigestionSection(stoolFreq, { stoolFreq = it }, stoolColor, { stoolColor = it }) }
+            item {
+                DigestionSection(
+                    stoolFreq,
+                    { stoolFreq = it },
+                    stoolColor,
+                    { stoolColor = it })
+            }
 
             item {
                 SymptomsSection(

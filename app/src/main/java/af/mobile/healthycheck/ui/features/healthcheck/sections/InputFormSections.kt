@@ -1,4 +1,4 @@
-package af.mobile.healthycheck.ui.screens.sections
+package af.mobile.healthycheck.ui.features.healthcheck.sections
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape

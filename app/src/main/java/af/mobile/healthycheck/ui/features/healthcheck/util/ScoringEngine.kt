@@ -1,4 +1,4 @@
-package af.mobile.healthycheck.ui.util
+package af.mobile.healthycheck.ui.features.healthcheck.util
 
 import af.mobile.healthycheck.ui.model.HealthCheckInput
 import af.mobile.healthycheck.ui.model.RiskLevel

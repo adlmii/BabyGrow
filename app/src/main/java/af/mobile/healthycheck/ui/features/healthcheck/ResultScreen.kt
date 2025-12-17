@@ -1,4 +1,4 @@
-package af.mobile.healthycheck.ui.screens
+package af.mobile.healthycheck.ui.features.healthcheck
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColorAsState
@@ -30,8 +30,8 @@ import af.mobile.healthycheck.ui.model.HealthCheckInput
 import af.mobile.healthycheck.ui.model.HealthCheckSummary
 import af.mobile.healthycheck.ui.model.RiskLevel
 import af.mobile.healthycheck.ui.theme.*
-import af.mobile.healthycheck.ui.util.ScoringEngine
-import af.mobile.healthycheck.ui.viewmodel.ResultViewModel
+import af.mobile.healthycheck.ui.features.healthcheck.util.ScoringEngine
+import af.mobile.healthycheck.ui.features.healthcheck.viewmodel.ResultViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
