@@ -17,6 +17,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import af.mobile.healthycheck.ui.features.healthcheck.model.HealthCheckSummary
 import af.mobile.healthycheck.ui.theme.*
+import androidx.compose.material.icons.rounded.HealthAndSafety
+import androidx.compose.material.icons.rounded.MedicalServices
+import androidx.compose.material.icons.rounded.MonitorHeart
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -62,9 +65,9 @@ fun HistoryCard(
                 ) {
                     Icon(
                         imageVector = when(item.riskLevel.uppercase()) {
-                            "HIGH" -> Icons.Outlined.WarningAmber
-                            "MEDIUM" -> Icons.Outlined.ElectricBolt
-                            else -> Icons.Outlined.CheckCircle
+                            "HIGH" -> Icons.Rounded.MedicalServices
+                            "MEDIUM" -> Icons.Rounded.MonitorHeart
+                            else -> Icons.Rounded.HealthAndSafety
                         },
                         contentDescription = item.riskLevel,
                         tint = riskColor,

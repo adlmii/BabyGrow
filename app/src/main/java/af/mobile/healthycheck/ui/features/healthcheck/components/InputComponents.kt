@@ -1,24 +1,26 @@
 package af.mobile.healthycheck.ui.features.healthcheck.sections
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import af.mobile.healthycheck.ui.components.*
 import af.mobile.healthycheck.ui.features.healthcheck.components.GenderButton
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.draw.shadow
 
-// 1. Identity Section
+// --- 1. SECTIONS FORM ---
 @Composable
 fun IdentitySection(
     gender: String,
@@ -55,7 +57,6 @@ fun IdentitySection(
     }
 }
 
-// 2. Vital Section
 @Composable
 fun VitalSection(
     temp: String, onTempChange: (String) -> Unit,
@@ -71,7 +72,6 @@ fun VitalSection(
     }
 }
 
-// 3. Appetite Section
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppetiteSection(
@@ -86,7 +86,7 @@ fun AppetiteSection(
                     Text("${appetite.toInt()}/5", modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp), style = MaterialTheme.typography.labelLarge, color = Color.White)
                 }
             }
-                Slider(
+            Slider(
                 value = appetite, onValueChange = onAppetiteChange, valueRange = 1f..5f, steps = 3, modifier = Modifier.fillMaxWidth().height(48.dp),
                 colors = SliderDefaults.colors(thumbColor = MaterialTheme.colorScheme.primary, activeTrackColor = MaterialTheme.colorScheme.primary, inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant),
                 thumb = { Box(modifier = Modifier.size(32.dp).shadow(4.dp, CircleShape).background(MaterialTheme.colorScheme.primary, CircleShape).border(4.dp, Color.White, CircleShape)) }
@@ -99,7 +99,6 @@ fun AppetiteSection(
     }
 }
 
-// 4. Digestion Section
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DigestionSection(
@@ -113,7 +112,6 @@ fun DigestionSection(
             var expandedColor by remember { mutableStateOf(false) }
             val colors = listOf("Coklat", "Kuning", "Hijau", "Putih Pucat", "Hitam", "Berdarah")
 
-            // Komponen Eksperimental ada di sini
             ExposedDropdownMenuBox(
                 expanded = expandedColor,
                 onExpandedChange = { expandedColor = it },
@@ -134,7 +132,6 @@ fun DigestionSection(
     }
 }
 
-// 5. Symptoms Section
 @Composable
 fun SymptomsSection(
     cough: Boolean, onCoughChange: (Boolean) -> Unit,
@@ -157,6 +154,41 @@ fun SymptomsSection(
                 Box(modifier = Modifier.weight(1f)) { SymptomCheckbox("Sulit Menyusu", nurse, onNurseChange) }
                 Spacer(modifier = Modifier.weight(1f))
             }
+        }
+    }
+}
+
+// --- 2. ACTION COMPONENT ---
+
+@Composable
+fun SubmitCheckButton(
+    isValid: Boolean,
+    onClick: () -> Unit
+) {
+    Button(
+        onClick = onClick,
+        enabled = isValid,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp)
+            .shadow(if (isValid) 8.dp else 0.dp, RoundedCornerShape(16.dp)),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = Color.White,
+
+            disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+            disabledContentColor = Color.White.copy(alpha = 0.8f)
+        ),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Text(
+            "Analisa Kesehatan",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+        if (isValid) {
+            Spacer(Modifier.width(8.dp))
+            Icon(Icons.Rounded.CheckCircle, contentDescription = null)
         }
     }
 }
