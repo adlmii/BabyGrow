@@ -11,8 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import af.mobile.healthycheck.ui.components.EmptyStateCard
-import af.mobile.healthycheck.ui.components.HistoryCard
+import af.mobile.healthycheck.ui.features.healthcheck.components.EmptyStateCard
+import af.mobile.healthycheck.ui.features.healthcheck.components.HistoryCard
 import af.mobile.healthycheck.ui.features.healthcheck.model.HealthCheckSummary
 
 fun LazyListScope.historySection(

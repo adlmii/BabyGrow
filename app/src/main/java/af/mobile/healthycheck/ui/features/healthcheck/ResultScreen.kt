@@ -33,6 +33,8 @@ import af.mobile.healthycheck.ui.model.RiskLevel
 import af.mobile.healthycheck.ui.theme.*
 import af.mobile.healthycheck.ui.features.healthcheck.viewmodel.ResultViewModel
 import af.mobile.healthycheck.ui.components.SimpleHeader
+import af.mobile.healthycheck.ui.features.healthcheck.components.AssessmentCard
+import af.mobile.healthycheck.ui.features.healthcheck.components.InputDataCard
 
 @Composable
 fun ResultScreen(
@@ -232,13 +234,21 @@ fun ResultScreen(
                 )
             }
             item {
-                AssessmentCard(title = "Faktor Risiko Terdeteksi", icon = Icons.Outlined.Analytics, items = ui.reasons)
+                AssessmentCard(
+                    title = "Faktor Risiko Terdeteksi",
+                    icon = Icons.Outlined.Analytics,
+                    items = ui.reasons
+                )
             }
 
             // LIST GEJALA
             if (input?.symptoms?.isNotEmpty() == true) {
                 item {
-                    AssessmentCard(title = "Gejala Dilaporkan", icon = Icons.Outlined.MedicalServices, items = input.symptoms)
+                    AssessmentCard(
+                        title = "Gejala Dilaporkan",
+                        icon = Icons.Outlined.MedicalServices,
+                        items = input.symptoms
+                    )
                 }
             }
 

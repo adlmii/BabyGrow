@@ -1,4 +1,4 @@
-package af.mobile.healthycheck.ui.components
+package af.mobile.healthycheck.ui.features.healthcheck.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
