@@ -13,6 +13,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.Assignment
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -43,7 +45,7 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
     // Ambil Data Summary Lengkap
     val summaryData = navController.previousBackStackEntry?.savedStateHandle?.get<HealthCheckSummary>("fullSummary")
 
-    // 2. Logic Evaluasi (Hitung / Simpan)
+    // 2. Logic Evaluasi
     LaunchedEffect(input) {
         if (input != null) {
             if (isHistoryView) {
@@ -57,8 +59,6 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
     }
 
     val ui by vm.uiState.collectAsState()
-
-    // Warna & Ikon Dinamis berdasarkan Risk Level
     val riskColor = when(ui.riskLevel) {
         RiskLevel.HIGH -> StatusDanger
         RiskLevel.MEDIUM -> StatusWarning
@@ -159,7 +159,7 @@ fun ResultScreen(navController: NavHostController, vm: ResultViewModel = viewMod
                 },
                 navigationIcon = {
                     IconButton(onClick = { handleBackButton() }) {
-                        Icon(Icons.Rounded.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
                     }
                 },
                 // Action Kanan: Tombol Hapus (Hanya muncul di Mode History)
@@ -470,7 +470,7 @@ fun InputDataCard(input: HealthCheckInput) {
             // Header
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    Icons.Outlined.Assignment,
+                    Icons.AutoMirrored.Outlined.Assignment,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary
                 )

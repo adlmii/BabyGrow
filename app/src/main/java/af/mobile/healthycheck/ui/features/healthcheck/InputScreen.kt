@@ -10,6 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material.icons.rounded.CheckCircle
@@ -101,7 +102,7 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
             verticalArrangement = Arrangement.spacedBy(12.dp),
             contentPadding = PaddingValues(vertical = 24.dp)
         ) {
-            // 1. INPUT SECTIONS (Panggil komponen yang sudah dipisah)
+            // 1. INPUT SECTIONS
             item { IdentitySection(gender, { gender = it }, ageInput, { ageInput = it }) }
             item {
                 VitalSection(
@@ -133,32 +134,50 @@ fun InputScreen(navController: NavHostController, vm: InputViewModel = viewModel
 
             // 2. TOMBOL ANALISA
             item {
-                Button(
-                    onClick = {
-                        val symptoms = mutableListOf<String>()
-                        if (symptomCough) symptoms.add("Batuk")
-                        if (symptomRash) symptoms.add("Ruam")
-                        if (symptomFlu) symptoms.add("Flu")
-                        if (symptomDifficultBreath) symptoms.add("Sesak Nafas")
-                        if (symptomHardToNurse) symptoms.add("Sulit Menyusu")
+                if (isFormValid) {
+                    Button(
+                        onClick = {
+                            val symptoms = mutableListOf<String>()
+                            if (symptomCough) symptoms.add("Batuk")
+                            if (symptomRash) symptoms.add("Ruam")
+                            if (symptomFlu) symptoms.add("Flu")
+                            if (symptomDifficultBreath) symptoms.add("Sesak Nafas")
+                            if (symptomHardToNurse) symptoms.add("Sulit Menyusu")
 
-                        val input = HealthCheckInput(
-                            gender, ageInput.toIntOrNull() ?: 0, temp.toDoubleOrNull(),
-                            vomit.toIntOrNull() ?: 0, diapers.toIntOrNull() ?: 0,
-                            appetite.toInt(), stoolFreq.toIntOrNull() ?: 0, stoolColor, symptoms
-                        )
-                        navController.currentBackStackEntry?.savedStateHandle?.set("isHistoryView", false)
-                        navController.currentBackStackEntry?.savedStateHandle?.set("healthInput", input)
-                        navController.navigate(Screen.Result.route)
-                    },
-                    modifier = Modifier.fillMaxWidth().height(56.dp).shadow(if (isFormValid) 8.dp else 0.dp, RoundedCornerShape(16.dp)),
-                    enabled = isFormValid,
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = Color.White),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Text("Analisa Kesehatan", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                    Spacer(Modifier.width(8.dp))
-                    Icon(Icons.Rounded.CheckCircle, contentDescription = null)
+                            val input = HealthCheckInput(
+                                gender, ageInput.toIntOrNull() ?: 0, temp.toDoubleOrNull(),
+                                vomit.toIntOrNull() ?: 0, diapers.toIntOrNull() ?: 0,
+                                appetite.toInt(), stoolFreq.toIntOrNull() ?: 0, stoolColor, symptoms
+                            )
+                            navController.currentBackStackEntry?.savedStateHandle?.set("isHistoryView", false)
+                            navController.currentBackStackEntry?.savedStateHandle?.set("healthInput", input)
+                            navController.navigate(Screen.Result.route)
+                        },
+                        modifier = Modifier.fillMaxWidth().height(56.dp).shadow(8.dp, RoundedCornerShape(16.dp)),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        Text("Analisa Kesehatan", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.width(8.dp))
+                        Icon(Icons.Rounded.CheckCircle, contentDescription = null)
+                    }
+                } else {
+                    OutlinedButton(
+                        onClick = {},
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.primary
+                        ),
+                        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        Text("Analisa Kesehatan", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.width(8.dp))
+                        Icon(Icons.Rounded.CheckCircle, contentDescription = null)
+                    }
                 }
             }
 

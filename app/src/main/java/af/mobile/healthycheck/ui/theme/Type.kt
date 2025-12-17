@@ -7,7 +7,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
 val Typography = Typography(
-    // Display styles - Untuk judul besar yang sangat menonjol
     displayLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.ExtraBold,
@@ -30,7 +29,6 @@ val Typography = Typography(
         letterSpacing = 0.sp
     ),
 
-    // Headline styles - Untuk judul halaman atau bagian penting
     headlineLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.ExtraBold,
@@ -40,7 +38,7 @@ val Typography = Typography(
     ),
     headlineMedium = TextStyle(
         fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.ExtraBold, // Dipertebal agar lebih modern
+        fontWeight = FontWeight.ExtraBold,
         fontSize = 28.sp,
         lineHeight = 36.sp,
         letterSpacing = 0.sp
@@ -53,7 +51,6 @@ val Typography = Typography(
         letterSpacing = 0.sp
     ),
 
-    // Title styles - Untuk judul kartu (Card Headers)
     titleLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.SemiBold,
@@ -76,13 +73,12 @@ val Typography = Typography(
         letterSpacing = 0.1.sp
     ),
 
-    // Body styles - Untuk teks isi, letter spacing diatur agar bersih (clean look)
     bodyLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
-        letterSpacing = 0.1.sp // Sedikit rapat untuk keterbacaan modern
+        letterSpacing = 0.1.sp
     ),
     bodyMedium = TextStyle(
         fontFamily = FontFamily.Default,
@@ -99,10 +95,9 @@ val Typography = Typography(
         letterSpacing = 0.4.sp
     ),
 
-    // Label styles - Untuk tombol dan label kecil
     labelLarge = TextStyle(
         fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Bold, // Bold pada tombol agar lebih jelas
+        fontWeight = FontWeight.Bold,
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.1.sp

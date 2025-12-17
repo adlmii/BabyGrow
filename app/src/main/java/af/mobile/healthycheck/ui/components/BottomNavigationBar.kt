@@ -1,6 +1,7 @@
 package af.mobile.healthycheck.ui.components
 
 import af.mobile.healthycheck.ui.navigation.Screen
+import af.mobile.healthycheck.ui.theme.PrimaryBlue
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Analytics
 import androidx.compose.material.icons.rounded.MonitorHeart
@@ -9,7 +10,9 @@ import androidx.compose.material.icons.rounded.Straighten
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -46,17 +49,35 @@ fun BottomNavigationBar(navController: NavController) {
             tonalElevation = 8.dp
         ) {
             items.forEach { item ->
+                val isSelected = currentRoute == item.screen.route
+
                 NavigationBarItem(
                     icon = { Icon(item.icon, contentDescription = item.title) },
-                    label = { Text(item.title) },
-                    selected = currentRoute == item.screen.route,
+                    label = {
+                        Text(
+                            text = item.title,
+                            fontWeight = FontWeight.Bold
+                        )
+                    },
+                    selected = isSelected,
                     onClick = {
-                        navController.navigate(item.screen.route) {
-                            popUpTo(navController.graph.startDestinationId) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
+                        if (currentRoute != item.screen.route) {
+                            navController.navigate(item.screen.route) {
+                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
                         }
-                    }
+                    },
+                    // KONFIGURASI WARNA BARU
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = PrimaryBlue,
+                        selectedTextColor = PrimaryBlue,
+                        indicatorColor = PrimaryBlue.copy(alpha = 0.15f),
+
+                        unselectedIconColor = Color.Gray,
+                        unselectedTextColor = Color.Gray
+                    )
                 )
             }
         }

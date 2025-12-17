@@ -14,18 +14,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-
-// Imports
 import af.mobile.healthycheck.ui.theme.BabyGrowTheme
 import af.mobile.healthycheck.ui.navigation.Screen
 import af.mobile.healthycheck.ui.components.BottomNavigationBar
-
-// Fitur Kamu (HealthCheck) - Pastikan lokasi import sesuai folder baru kamu
 import af.mobile.healthycheck.ui.features.healthcheck.InputScreen
 import af.mobile.healthycheck.ui.features.healthcheck.ResultScreen
 import af.mobile.healthycheck.ui.features.healthcheck.ArticleScreen
@@ -65,7 +60,7 @@ fun AppRoot() {
 fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Input.route, // Default masuk Nanti Ubah
+        startDestination = Screen.Input.route,
         modifier = modifier
     ) {
 

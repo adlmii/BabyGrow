@@ -7,12 +7,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.outlined.Public
-import androidx.compose.material.icons.outlined.MenuBook
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.Share
-import androidx.compose.material.icons.outlined.Article
+import androidx.compose.material.icons.automirrored.outlined.Article
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -89,7 +89,7 @@ fun ArticleDetailScreen(
                         )
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.MenuBook,
+                        imageVector = Icons.AutoMirrored.Outlined.MenuBook,
                         contentDescription = null,
                         tint = Color.White.copy(alpha = 0.1f),
                         modifier = Modifier
@@ -113,7 +113,7 @@ fun ArticleDetailScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             IconButton(onClick = { navController.popBackStack() }) {
-                                Icon(Icons.Rounded.ArrowBack, contentDescription = "Kembali", tint = Color.White)
+                                Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Kembali", tint = Color.White)
                             }
                             Text(
                                 text = "Detail Edukasi",
@@ -259,7 +259,6 @@ fun ArticleDetailScreen(
     }
 }
 
-// Compact Article Item for Related Articles
 @Composable
 fun CompactArticleItem(article: Article, onClick: () -> Unit) {
     Card(
@@ -280,7 +279,7 @@ fun CompactArticleItem(article: Article, onClick: () -> Unit) {
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
-                        imageVector = Icons.Outlined.Article,
+                        imageVector = Icons.AutoMirrored.Outlined.Article,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSecondaryContainer
                     )
@@ -311,7 +310,6 @@ fun CompactArticleItem(article: Article, onClick: () -> Unit) {
     }
 }
 
-// Function to format article content with styles
 fun formatArticleContent(content: String, primaryColor: Color, textColor: Color, errorColor: Color): AnnotatedString {
     return buildAnnotatedString {
         val lines = content.split("\n")

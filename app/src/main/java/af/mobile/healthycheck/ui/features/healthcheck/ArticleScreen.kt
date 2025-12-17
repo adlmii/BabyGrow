@@ -6,7 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material3.*
@@ -53,7 +53,7 @@ fun ArticleScreen(
                 navigationIcon = {
                     if (navController != null) {
                         IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(Icons.Rounded.ArrowBack, contentDescription = "Kembali")
+                            Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Kembali")
                         }
                     }
                 },

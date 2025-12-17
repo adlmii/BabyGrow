@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun ModernTextField(
+    modifier: Modifier = Modifier,
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
@@ -19,8 +20,8 @@ fun ModernTextField(
     suffix: String = "",
     readOnly: Boolean = false,
     keyboardType: KeyboardType = KeyboardType.Text,
-    leadingIcon: ImageVector? = null,
-    modifier: Modifier = Modifier
+    leadingIcon: ImageVector? = null
+
 ) {
     OutlinedTextField(
         value = value,

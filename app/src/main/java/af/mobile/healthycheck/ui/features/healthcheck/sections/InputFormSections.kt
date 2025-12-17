@@ -48,10 +48,8 @@ fun IdentitySection(
             value = ageInput,
             onValueChange = { if (it.all { char -> char.isDigit() }) onAgeChange(it) },
             label = "Umur Anak",
-            placeholder = "Contoh: 12",
             suffix = "Bulan",
-            keyboardType = KeyboardType.Number,
-            leadingIcon = Icons.Outlined.Cake
+            keyboardType = KeyboardType.Number
         )
     }
 }
@@ -63,11 +61,11 @@ fun VitalSection(
     vomit: String, onVomitChange: (String) -> Unit,
     diapers: String, onDiapersChange: (String) -> Unit
 ) {
-    ModernCard(title = "Tanda Vital", icon = Icons.Outlined.MonitorHeart) {
+    ModernCard(title = "Tanda Vital", icon = Icons.Outlined.Thermostat) {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            ModernTextField(value = temp, onValueChange = onTempChange, label = "Suhu Tubuh", placeholder = "Contoh: 36.5", suffix = "°C", keyboardType = KeyboardType.Decimal, leadingIcon = Icons.Outlined.Thermostat)
-            ModernTextField(value = vomit, onValueChange = onVomitChange, label = "Muntah", suffix = "x / hari", keyboardType = KeyboardType.Number, leadingIcon = Icons.Outlined.Sick)
-            ModernTextField(value = diapers, onValueChange = onDiapersChange, label = "Popok Basah", suffix = "x / hari", keyboardType = KeyboardType.Number, leadingIcon = Icons.Outlined.WaterDrop)
+            ModernTextField(value = temp, onValueChange = onTempChange, label = "Suhu Tubuh", suffix = "°C", keyboardType = KeyboardType.Decimal)
+            ModernTextField(value = vomit, onValueChange = onVomitChange, label = "Muntah", suffix = "x / hari", keyboardType = KeyboardType.Number)
+            ModernTextField(value = diapers, onValueChange = onDiapersChange, label = "Popok Basah", suffix = "x / hari", keyboardType = KeyboardType.Number)
         }
     }
 }
@@ -101,16 +99,15 @@ fun AppetiteSection(
 }
 
 // 4. Digestion Section
-// [PERBAIKAN] Pastikan @OptIn ada di sini untuk mengatasi error "line 91"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DigestionSection(
     stoolFreq: String, onStoolFreqChange: (String) -> Unit,
     stoolColor: String, onStoolColorChange: (String) -> Unit
 ) {
-    ModernCard(title = "Pencernaan (BAB)", icon = Icons.Outlined.Spa) {
+    ModernCard(title = "Pencernaan (BAB)", icon = Icons.Outlined.WaterDrop) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            ModernTextField(value = stoolFreq, onValueChange = onStoolFreqChange, label = "Frekuensi", placeholder = "0", suffix = "x / hari", keyboardType = KeyboardType.Number, modifier = Modifier.weight(1f))
+            ModernTextField(value = stoolFreq, onValueChange = onStoolFreqChange, label = "Frekuensi", suffix = "x / hari", keyboardType = KeyboardType.Number, modifier = Modifier.weight(1f))
 
             var expandedColor by remember { mutableStateOf(false) }
             val colors = listOf("Coklat", "Kuning", "Hijau", "Putih Pucat", "Hitam", "Berdarah")
@@ -145,7 +142,7 @@ fun SymptomsSection(
     breath: Boolean, onBreathChange: (Boolean) -> Unit,
     nurse: Boolean, onNurseChange: (Boolean) -> Unit
 ) {
-    ModernCard(title = "Gejala Tambahan", icon = Icons.Outlined.WarningAmber) {
+    ModernCard(title = "Gejala Tambahan", icon = Icons.Outlined.Sick) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Box(modifier = Modifier.weight(1f)) { SymptomCheckbox("Batuk", cough, onCoughChange) }
