@@ -20,7 +20,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import af.mobile.healthycheck.ui.theme.BabyGrowTheme
 import af.mobile.healthycheck.ui.navigation.Screen
-import af.mobile.healthycheck.ui.components.BottomNavigationBar
 import af.mobile.healthycheck.ui.features.healthcheck.InputScreen
 import af.mobile.healthycheck.ui.features.healthcheck.ResultScreen
 import af.mobile.healthycheck.ui.features.healthcheck.ArticleScreen
@@ -47,9 +46,7 @@ class MainActivity : ComponentActivity() {
 fun AppRoot() {
     val navController = rememberNavController()
 
-    Scaffold(
-        bottomBar = { BottomNavigationBar(navController = navController) }
-    ) { innerPadding ->
+    Scaffold { innerPadding ->
         AppNavHost(
             navController = navController,
             modifier = Modifier.padding(innerPadding)

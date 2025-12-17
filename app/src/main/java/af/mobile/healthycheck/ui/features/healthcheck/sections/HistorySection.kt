@@ -29,7 +29,7 @@ fun LazyListScope.historySection(
         HorizontalDivider(modifier = Modifier.padding(top = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         Text(
             "Riwayat Pemeriksaan",
-            style = MaterialTheme.typography.headlineSmall,
+            style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onBackground,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(top = 24.dp, bottom = 4.dp)

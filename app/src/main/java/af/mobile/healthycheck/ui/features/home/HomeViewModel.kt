@@ -18,7 +18,7 @@ data class HomeGreetingState(
 
 class HomeViewModel : ViewModel() {
 
-    // --- State: Sapaan (Greeting) ---
+    // --- State: Sapaan  ---
     private val _greetingState = MutableStateFlow(HomeGreetingState())
     val greetingState: StateFlow<HomeGreetingState> = _greetingState.asStateFlow()
 
@@ -28,7 +28,7 @@ class HomeViewModel : ViewModel() {
             FeatureData("Pertumbuhan", Icons.Rounded.Straighten, primaryColor, Screen.Growth.route, rotation = -15f),
             FeatureData("Gizi", Icons.Rounded.Restaurant, primaryColor, Screen.Nutrition.route),
             FeatureData("Stunting", Icons.Rounded.Analytics, primaryColor, Screen.Stunting.route),
-            FeatureData("Cek Yuk", Icons.Rounded.MonitorHeart, primaryColor, Screen.Input.route)
+            FeatureData("Cek Gejala", Icons.Rounded.MonitorHeart, primaryColor, Screen.Input.route)
         )
     }
 
