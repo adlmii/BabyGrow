@@ -24,8 +24,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import af.mobile.healthycheck.ui.model.HealthCheckInput
-import af.mobile.healthycheck.ui.model.HealthCheckSummary
+import af.mobile.healthycheck.ui.features.healthcheck.model.HealthCheckInput
+import af.mobile.healthycheck.ui.features.healthcheck.model.HealthCheckSummary
 import af.mobile.healthycheck.ui.features.healthcheck.viewmodel.InputViewModel
 import af.mobile.healthycheck.ui.navigation.Screen
 

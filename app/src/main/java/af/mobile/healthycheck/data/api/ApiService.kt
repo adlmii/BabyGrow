@@ -1,7 +1,7 @@
 package af.mobile.healthycheck.data.api
 
 import af.mobile.healthycheck.data.model.Article
-import af.mobile.healthycheck.ui.model.HealthCheckSummary
+import af.mobile.healthycheck.ui.features.healthcheck.model.HealthCheckSummary
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET

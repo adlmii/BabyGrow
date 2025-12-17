@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import af.mobile.healthycheck.ui.model.HealthCheckSummary
+import af.mobile.healthycheck.ui.features.healthcheck.model.HealthCheckSummary
 import af.mobile.healthycheck.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.Locale

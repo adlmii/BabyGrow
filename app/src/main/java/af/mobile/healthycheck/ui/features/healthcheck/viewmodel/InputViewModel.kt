@@ -3,7 +3,7 @@ package af.mobile.healthycheck.ui.features.healthcheck.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import af.mobile.healthycheck.data.repository.HealthRepository
-import af.mobile.healthycheck.ui.model.HealthCheckSummary
+import af.mobile.healthycheck.ui.features.healthcheck.model.HealthCheckSummary
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

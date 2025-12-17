@@ -13,7 +13,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import af.mobile.healthycheck.ui.components.EmptyStateCard
 import af.mobile.healthycheck.ui.components.HistoryCard
-import af.mobile.healthycheck.ui.model.HealthCheckSummary
+import af.mobile.healthycheck.ui.features.healthcheck.model.HealthCheckSummary
 
 // Extension function untuk LazyColumn
 fun LazyListScope.historySection(

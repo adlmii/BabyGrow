@@ -1,4 +1,4 @@
-package af.mobile.healthycheck.ui.model
+package af.mobile.healthycheck.ui.features.healthcheck.model
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize

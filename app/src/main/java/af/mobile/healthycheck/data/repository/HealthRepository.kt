@@ -2,7 +2,7 @@ package af.mobile.healthycheck.data.repository
 
 import af.mobile.healthycheck.data.api.RetrofitClient
 import af.mobile.healthycheck.data.model.Article
-import af.mobile.healthycheck.ui.model.HealthCheckSummary
+import af.mobile.healthycheck.ui.features.healthcheck.model.HealthCheckSummary
 
 class HealthRepository {
     // Inisialisasi Retrofit API Client

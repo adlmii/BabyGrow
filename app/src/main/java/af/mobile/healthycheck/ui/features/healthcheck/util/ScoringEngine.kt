@@ -1,6 +1,6 @@
 package af.mobile.healthycheck.ui.features.healthcheck.util
 
-import af.mobile.healthycheck.ui.model.HealthCheckInput
+import af.mobile.healthycheck.ui.features.healthcheck.model.HealthCheckInput
 import af.mobile.healthycheck.ui.model.RiskLevel
 import af.mobile.healthycheck.ui.model.StoolColor
 import androidx.compose.material.icons.Icons
